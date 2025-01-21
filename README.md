@@ -11,3 +11,7 @@ A tool to transfer your Geometry Dash save files, without saving to RobTop's ser
 5. Find the "USB debugging" option and toggle it on.
 
 The next time you plug your device into a computer, you'll receive a prompt asking if you want to authorize USB debugging for that computer. Tap OK to confirm
+
+**Currently, the program assumes that the ADB executable is inside a subfolder which is called "adb".**
+This means that you will need to download ADB separately.
+
