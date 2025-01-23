@@ -54,7 +54,7 @@ def transfer_button_click():
 def open_settings():
     settings_window = tk.Toplevel()
     settings_window.title("Settings")
-    settings_window.geometry("300x200")
+    settings_window.geometry("300x250")
 
     configlabel = tk.Label(settings_window, text="under construction", font=('Arial', 12))
     configlabel.pack(padx=40, pady=20)
@@ -76,7 +76,7 @@ def open_settings():
         change_msg("saved settings!")
 
     save_button = tk.Button(settings_window, text='Save Settings', command=save_settings)
-    save_button.pack(side=tk.BOTTOM)
+    save_button.pack(side=tk.BOTTOM, pady=10)
 
     kill_button = tk.Button(settings_window, text='Kill ADB Server', command=kill_adb_server)
     kill_button.pack(side=tk.BOTTOM)
@@ -124,11 +124,11 @@ def create_ui():
 
     # phone to computer button
     phone_button = tk.Button(root, text='Phone to computer', command=phone_button_click)
-    phone_button.pack()
+    phone_button.pack(pady=3)
 
     # computer to phone button
     pc_button = tk.Button(root, text='Computer to phone', command=pc_button_click)
-    pc_button.pack()
+    pc_button.pack(pady=3)
 
 def main():
     root.title("GD Data Transfer")
