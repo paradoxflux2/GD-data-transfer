@@ -64,37 +64,27 @@ if not path_adb.is_file():
     print(f"adb not found at {path_adb}")
     sys.exit(1)
 
-
 print(f"adb path: {path_adb}")
 
 def transfersaves(origin):
-    """transfer save data with adb commands"""  
     global exitstatus
-    if origin == "phone": # phone to pc
-        for savefile in filelist:
-            pullcommand = [str(path_adb), "pull", f"{ANDROID_DIR}{savefile}", str(PC_DIR)]
-            #print(pullcommand)
-            result = subprocess.run(pullcommand, capture_output=True, text=True, check=False)
-            exitstatus = result.returncode
-            if exitstatus == 0:
-                print(f"{savefile} succesfully transferred")
-            else:
-                print(f"couldnt transfer {savefile}. return code: {exitstatus}")
-                print(result.stderr)
 
-    elif origin == "computer": # pc to phone
-        for savefile in filelist:
-            pushcommand = [str(path_adb), "push", f"{PC_DIR}{savefile}", ANDROID_DIR]
-            #print(pushcommand)
-            result = subprocess.run(pushcommand, capture_output=True, text=True, check=False)
-            exitstatus = result.returncode
-            if exitstatus == 0:
-                print(f"{savefile} succesfully transferred")
-            else:
-                print(f"couldnt transfer {savefile}. return code: {exitstatus}")
-                print(result.stderr)
-    else:
-        print("invalid origin")
+    for savefile in filelist:
+        if origin == "phone":
+            command = [str(path_adb), "pull", f"{ANDROID_DIR}{savefile}", str(PC_DIR)]
+        elif origin == "computer":
+            command = [str(path_adb), "push", f"{PC_DIR}{savefile}", ANDROID_DIR]
+        else:
+            print("invalid origin")
+            break
+
+        result = subprocess.run(command, capture_output=True, text=True, check=False)
+        exitstatus = result.returncode
+        if exitstatus == 0:
+            print(f"{savefile} succesfully transferred")
+        else:
+            print(f"couldnt transfer {savefile}. return code: {exitstatus}")
+            print(result.stderr)
 
 def set_android_dir(new_path):
     global ANDROID_DIR
@@ -114,3 +104,4 @@ def set_pc_dir(new_path):
 if __name__ == "__main__":
     ORIGIN = input("transfer files from: (phone/computer): ").strip().lower()
     transfersaves(ORIGIN)
+    
