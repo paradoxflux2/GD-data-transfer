@@ -84,7 +84,7 @@ def backup_file(origin, savefile):
                 cmd = ['cp', f"{PC_DIR}{savefile}", backups_dir_path]
             result = subprocess.call(cmd)
     elif origin == "computer":
-        cmd = [str(path_adb), "pull", f"{ANDROID_DIR}{savefile}", f"{backups_dir}{savefile}"]
+        cmd = [str(path_adb), "pull", f"{ANDROID_DIR}{savefile}", backups_dir_path]
         subprocess.run(cmd, capture_output=True, text=True, check=False)
     
     print(f"saved backup at {backups_dir_path}")
