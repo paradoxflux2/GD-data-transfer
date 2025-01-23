@@ -170,5 +170,6 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
-# settings file
+# gddt
 src/settings.ini
+backups/

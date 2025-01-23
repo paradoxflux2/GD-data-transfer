@@ -66,13 +66,36 @@ if not path_adb.is_file():
 
 print(f"adb path: {path_adb}")
 
+def backup_file(origin, savefile):
+    # create backups directory
+    backups_dir = path_current_directory / 'backups'
+    backups_dir_path = backups_dir / savefile
+    if not os.path.exists(backups_dir):
+        os.makedirs(backups_dir)
+
+    if origin == "phone":
+        NEW_PC_DIR = Path(PC_DIR)
+        savefile_path = NEW_PC_DIR / savefile
+        if savefile_path.is_file():
+            # adapt copy command to each os
+            if os.name == "nt":
+                cmd = ['copy', f"{PC_DIR}{savefile}", backups_dir_path]
+            else:
+                cmd = ['cp', f"{PC_DIR}{savefile}", backups_dir_path]
+            result = subprocess.call(cmd)
+    elif origin == "computer":
+        cmd = [str(path_adb), "pull", f"{ANDROID_DIR}{savefile}", f"{backups_dir}{savefile}"]
+        subprocess.run(cmd, capture_output=True, text=True, check=False)
+    
+    print(f"saved backup at {backups_dir_path}")
+
 def transfersaves(origin):
     global exitstatus
-
     for savefile in filelist:
-        if origin == "phone":
+        backup_file(origin, savefile)
+        if origin == "phone": # phone to computer
             command = [str(path_adb), "pull", f"{ANDROID_DIR}{savefile}", str(PC_DIR)]
-        elif origin == "computer":
+        elif origin == "computer": # computer to phone
             command = [str(path_adb), "push", f"{PC_DIR}{savefile}", ANDROID_DIR]
         else:
             print("invalid origin")
