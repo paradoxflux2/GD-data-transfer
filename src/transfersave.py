@@ -97,7 +97,7 @@ def set_android_dir(new_path):
 def set_pc_dir(new_path):
     global PC_DIR
     PC_DIR = new_path
-    #os.path.
+    
     config.set('Directories', 'pc_dir', new_path)
     with open(str(path_config_file), 'w') as configfile:
         config.write(configfile)
