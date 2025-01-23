@@ -87,6 +87,20 @@ def transfersaves(origin):
     else:
         print("invalid origin")
 
+def set_android_dir(new_path):
+    global ANDROID_DIR
+    ANDROID_DIR = new_path
+    config.set('Directories', 'android_dir', new_path)
+    with open(path_config_file, 'w') as configfile:
+        config.write(configfile)
+
+def set_pc_dir(new_path):
+    global PC_DIR
+    PC_DIR = new_path
+    #os.path.
+    config.set('Directories', 'pc_dir', new_path)
+    with open(str(path_config_file), 'w') as configfile:
+        config.write(configfile)
 
 if __name__ == "__main__":
     ORIGIN = input("transfer files from: (phone/computer): ").strip().lower()

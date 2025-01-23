@@ -14,6 +14,7 @@ root = tk.Tk()
 # create window
 root.title("GD Data Transfer")
 root.geometry("500x300")
+root.resizable(0, 0)
 
 origin = "nothingselected"
 
@@ -53,34 +54,63 @@ def transfer_button_click():
         else:
             change_msg(f"couldnt transfer files\nADB return code: {transfersave.exitstatus}")
 
+# settings
+
 def open_settings():
     settings_window = tk.Toplevel()
     settings_window.title("Settings")
-    settings_window.config(width=300, height=200)
+    settings_window.geometry("300x200")
 
     configlabel = tk.Label(settings_window, text="under construction", font=('Arial', 12))
-    configlabel.pack(padx=20, pady=20)
+    configlabel.pack(padx=40, pady=20)
+
+    # android dir entry
+    android_dir_entry = tk.Entry(settings_window)
+    android_dir_entry.pack()
+    android_dir_entry.insert(0, transfersave.ANDROID_DIR)
+
+    # pc dir entry
+    pc_dir_entry = tk.Entry(settings_window)
+    pc_dir_entry.pack()
+    pc_dir_entry.insert(0, transfersave.PC_DIR)
+
+    def save_settings():
+        transfersave.set_android_dir(android_dir_entry.get())
+        transfersave.set_pc_dir(pc_dir_entry.get())
+        print(transfersave.ANDROID_DIR)
+        change_msg("saved settings!")
+
+    save_button = tk.Button(settings_window, text='Save Settings', command=save_settings)
+    save_button.pack(side=tk.BOTTOM)
 
     kill_button = tk.Button(settings_window, text='Kill ADB Server', command=kill_adb_server)
-    kill_button.pack()
+    kill_button.pack(side=tk.BOTTOM)
+
+    start_button = tk.Button(settings_window, text='Start ADB Server', command=start_adb_server)
+    start_button.pack(side=tk.BOTTOM)
 
 def kill_adb_server():
     kill_server_command = [str(transfersave.path_adb), "kill-server"]
     subprocess.run(kill_server_command, capture_output=True, text=True, check=False)
-    print("adb server is kil")
+    change_msg("adb server is kil")
+
+def start_adb_server():
+    start_server_command = [str(transfersave.path_adb), "start-server"]
+    subprocess.run(start_server_command, capture_output=True, text=True, check=False)
+    change_msg("adb server started")
 
 # create a menubar
 menubar = tk.Menu(root)
 root.config(menu=menubar)
 
-file_menu = tk.Menu(menubar)
+help_menu = tk.Menu(menubar, tearoff=False)
 
-# create file menu
-file_menu.add_command(label='Settings', command=open_settings)
-file_menu.add_command(label='Exit', command=root.destroy)
+# Help menu buttons
+help_menu.add_command(label='Settings', command=open_settings)
+help_menu.add_command(label='Exit', command=root.destroy)
 
-# add the File menu to the menubar
-menubar.add_cascade(label="File", menu=file_menu)
+# add the Help menu to the menubar
+menubar.add_cascade(label="Help", menu=help_menu)
 
 # title
 title = tk.Label(root, text="GD Data Transfer", font=('Arial', 18))
