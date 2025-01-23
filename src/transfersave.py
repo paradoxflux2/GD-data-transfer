@@ -30,21 +30,28 @@ else:
 
 print(f"application directory: {path_current_directory}")
 
-# config stuff
-path_config_file = path_current_directory / "settings.ini"
+def read_config():
+    local_path_config_file = path_current_directory / "settings.ini"
 
-# check if config file exists
-if not path_config_file.is_file():
-    print(f"settings.ini not found at {path_config_file}")
-    sys.exit(1)
+    # check if config file exists
+    if not local_path_config_file.is_file():
+        print(f"settings.ini not found at {local_path_config_file}")
+        sys.exit(1)
+
+    config.read(local_path_config_file)
+
+    android_dir = config.get('Directories', 'android_dir')
+    pc_dir = os.path.expandvars(config.get('Directories', 'pc_dir'))
+
+    # files that will be transferred (ik this technically could
+    # also be used for things outside gd but who cares lol)
+    files = config.get('Files', 'file_list').split(',')
+
+    return local_path_config_file, android_dir, pc_dir, files
+
+path_config_file, ANDROID_DIR, PC_DIR, filelist = read_config()
 
 print(f"config path: {path_config_file}")
-
-config.read(path_config_file)
-
-ANDROID_DIR = config.get('Directories', 'android_dir')
-PC_DIR = os.path.expandvars(config.get('Directories', 'pc_dir'))
-
 print(f"android dir: {ANDROID_DIR}")
 print(f"pc dir: {PC_DIR}")
 
@@ -59,10 +66,6 @@ if not path_adb.is_file():
 
 
 print(f"adb path: {path_adb}")
-
-# files that will be transferred (ik this technically could
-# also be used for things outside gd but who cares lol)
-filelist = config.get('Files', 'file_list').split(',')
 
 def transfersaves(origin):
     """transfer save data with adb commands"""  
