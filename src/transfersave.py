@@ -86,19 +86,17 @@ def transfersaves(origin):
             print(f"couldnt transfer {savefile}. return code: {exitstatus}")
             print(result.stderr)
 
-def set_android_dir(new_path):
+def set_dir(dir, new_path):
     global ANDROID_DIR
-    ANDROID_DIR = new_path
-    config.set('Directories', 'android_dir', new_path)
-    with open(path_config_file, 'w') as configfile:
-        config.write(configfile)
-
-def set_pc_dir(new_path):
     global PC_DIR
-    PC_DIR = new_path
 
-    config.set('Directories', 'pc_dir', new_path)
-    with open(str(path_config_file), 'w') as configfile:
+    if dir == "android_dir":
+        ANDROID_DIR = new_path
+    elif dir == "pc_dir":
+        PC_DIR = new_path
+
+    config.set('Directories', dir, new_path)
+    with open(path_config_file, 'w', encoding="utf-8") as configfile:
         config.write(configfile)
 
 if __name__ == "__main__":

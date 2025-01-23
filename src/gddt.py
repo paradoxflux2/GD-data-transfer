@@ -70,8 +70,8 @@ def open_settings():
     pc_dir_entry.insert(0, transfersave.PC_DIR)
 
     def save_settings():
-        transfersave.set_android_dir(android_dir_entry.get())
-        transfersave.set_pc_dir(pc_dir_entry.get())
+        transfersave.set_dir('android_dir', android_dir_entry.get())
+        transfersave.set_dir('pc_dir', pc_dir_entry.get())
         print(transfersave.ANDROID_DIR)
         change_msg("saved settings!")
 
