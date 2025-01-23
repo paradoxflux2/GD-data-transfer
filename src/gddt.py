@@ -11,11 +11,6 @@ import transfersave
 
 root = tk.Tk()
 
-# create window
-root.title("GD Data Transfer")
-root.geometry("500x300")
-root.resizable(0, 0)
-
 origin = "nothingselected"
 
 def change_msg(new_message):
@@ -99,39 +94,50 @@ def start_adb_server():
     subprocess.run(start_server_command, capture_output=True, text=True, check=False)
     change_msg("adb server started")
 
-# create a menubar
-menubar = tk.Menu(root)
-root.config(menu=menubar)
+def create_ui():
+    global label
 
-help_menu = tk.Menu(menubar, tearoff=False)
+    # create a menubar
+    menubar = tk.Menu(root)
+    root.config(menu=menubar)
 
-# Help menu buttons
-help_menu.add_command(label='Settings', command=open_settings)
-help_menu.add_command(label='Exit', command=root.destroy)
+    help_menu = tk.Menu(menubar, tearoff=False)
 
-# add the Help menu to the menubar
-menubar.add_cascade(label="Help", menu=help_menu)
+    # Help menu buttons
+    help_menu.add_command(label='Settings', command=open_settings)
+    help_menu.add_command(label='Exit', command=root.destroy)
 
-# title
-title = tk.Label(root, text="GD Data Transfer", font=('Arial', 18))
+    # add the Help menu to the menubar
+    menubar.add_cascade(label="Help", menu=help_menu)
 
-# transfer button
-transfer_button = tk.Button(root, text='Transfer', command=transfer_button_click)
+    # title
+    title = tk.Label(root, text="GD Data Transfer", font=('Arial', 18))
+    title.pack(padx=20, pady=20)
 
-# phone to computer button
-phone_button = tk.Button(root, text='Phone to computer', command=phone_button_click)
+    # message
+    label = tk.Label(root, text="please select a destination first", font=('Arial', 12))
+    label.pack(side=tk.BOTTOM, padx=20, pady=20)
 
-# computer to phone button
-pc_button = tk.Button(root, text='Computer to phone', command=pc_button_click)
+    # transfer button
+    transfer_button = tk.Button(root, text='Transfer', command=transfer_button_click)
+    transfer_button.pack(side=tk.BOTTOM)
 
-# message
-label = tk.Label(root, text="please select a destination first", font=('Arial', 12))
+    # phone to computer button
+    phone_button = tk.Button(root, text='Phone to computer', command=phone_button_click)
+    phone_button.pack()
 
-#settings_button.pack(anchor="nw")
-title.pack(padx=20, pady=20)
-phone_button.pack() # phone to pc
-pc_button.pack() # pc to phone
-label.pack(side=tk.BOTTOM, padx=20, pady=20)
-transfer_button.pack(side=tk.BOTTOM)
+    # computer to phone button
+    pc_button = tk.Button(root, text='Computer to phone', command=pc_button_click)
+    pc_button.pack()
 
-root.mainloop()
+def main():
+    root.title("GD Data Transfer")
+    root.geometry("500x300")
+    root.resizable(0, 0)
+
+    create_ui()
+
+    root.mainloop()
+
+if __name__ == "__main__":
+    main()
