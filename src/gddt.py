@@ -56,7 +56,7 @@ def open_settings():
     settings_window.title("Settings")
     settings_window.geometry("300x250")
 
-    configlabel = tk.Label(settings_window, text="under construction", font=('Arial', 12))
+    configlabel = tk.Label(settings_window, text="Settings", font=('Arial', 12))
     configlabel.pack(padx=40, pady=20)
 
     # android dir entry
