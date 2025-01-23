@@ -32,6 +32,12 @@ print(f"application directory: {path_current_directory}")
 
 # config stuff
 path_config_file = path_current_directory / "settings.ini"
+
+# check if config file exists
+if not path_config_file.is_file():
+    print(f"settings.ini not found at {path_config_file}")
+    sys.exit(1)
+
 print(f"config path: {path_config_file}")
 
 config.read(path_config_file)
