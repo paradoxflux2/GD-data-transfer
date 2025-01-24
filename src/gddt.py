@@ -11,7 +11,7 @@ import transfersave
 
 root = tk.Tk()
 
-origin = None
+source = None
 label = None
 
 def create_ui():
@@ -52,28 +52,28 @@ def create_ui():
 
 direction = {"phone": "computer", "computer": "phone"} # if source is phone, destination is computer, etc
 
-def set_origin(device):
-    global origin
-    if origin == device: # extra useless code yay
-        change_msg(f"destination was already {direction[origin]}, are you stupid?")
+def set_source(device):
+    global source
+    if source == device: # extra useless code yay
+        change_msg(f"destination was already {direction[source]}, are you stupid?")
     else:
-        origin = device
-        change_msg(f"changed destination to {direction[origin]}")
+        source = device
+        change_msg(f"changed destination to {direction[source]}")
 
 # button functions
 
 def phone_button_click():
-    set_origin("phone")
+    set_source("phone")
 
 def pc_button_click():
-    set_origin("computer")
+    set_source("computer")
 
 def transfer_button_click():
     """transfer button click"""
-    if origin is None:
+    if source is None:
         change_msg("you didnt select anything")
     else:
-        result = transfersave.transfersaves(origin)
+        result = transfersave.transfersaves(source)
         if transfersave.exitstatus == 0:
             change_msg("save files transferred succesfully!")
         else:

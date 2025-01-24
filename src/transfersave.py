@@ -70,7 +70,7 @@ if not path_adb.is_file():
 
 print(f"adb path: {path_adb}")
 
-def backup_file(origin, savefile):
+def backup_file(source, savefile):
     if save_backups:
         # create backups directory
         backups_dir = path_current_directory / 'backups'
@@ -78,7 +78,7 @@ def backup_file(origin, savefile):
         if not os.path.exists(backups_dir):
             os.makedirs(backups_dir)
 
-        if origin == "phone":
+        if source == "phone":
             NEW_PC_DIR = Path(PC_DIR)
             savefile_path = NEW_PC_DIR / savefile
             if savefile_path.is_file():
@@ -88,21 +88,21 @@ def backup_file(origin, savefile):
                 else:
                     cmd = ['cp', f"{PC_DIR}{savefile}", backups_dir_path]
                 result = subprocess.call(cmd)
-        elif origin == "computer":
+        elif source == "computer":
             cmd = [str(path_adb), "pull", f"{ANDROID_DIR}{savefile}", backups_dir_path]
             subprocess.run(cmd, capture_output=True, text=True, check=False)
         print(f"saved backup at {backups_dir_path}")
 
-def transfersaves(origin):
+def transfersaves(source):
     global exitstatus
     for savefile in filelist:
-        backup_file(origin, savefile)
-        if origin == "phone": # phone to computer
+        backup_file(source, savefile)
+        if source == "phone": # phone to computer
             command = [str(path_adb), "pull", f"{ANDROID_DIR}{savefile}", str(PC_DIR)]
-        elif origin == "computer": # computer to phone
+        elif source == "computer": # computer to phone
             command = [str(path_adb), "push", f"{PC_DIR}{savefile}", ANDROID_DIR]
         else:
-            print("invalid origin")
+            print("invalid source")
             break
 
         result = subprocess.run(command, capture_output=True, text=True, check=False)
@@ -137,5 +137,5 @@ def set_backups_setting(value):
     write_config('Files', 'save_backups', str(save_backups).lower())
 
 if __name__ == "__main__":
-    ORIGIN = input("transfer files from: (phone/computer): ").strip().lower()
-    transfersaves(ORIGIN)
+    SOURCE = input("transfer files from: (phone/computer): ").strip().lower()
+    transfersaves(SOURCE)
