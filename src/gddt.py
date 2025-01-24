@@ -54,25 +54,29 @@ def transfer_button_click():
 def open_settings():
     settings_window = tk.Toplevel()
     settings_window.title("Settings")
-    settings_window.geometry("300x250")
+    #settings_window.geometry("300x250")
 
     configlabel = tk.Label(settings_window, text="Settings", font=('Arial', 12))
-    configlabel.pack(padx=40, pady=20)
+    configlabel.grid(row=0, column=0, columnspan=2, pady=10, sticky=tk.EW)
 
     # android dir entry
+    android_dir_label = tk.Label(settings_window, text="Android Directory")
+    android_dir_label.grid(row=1, column=0, padx=10, pady=10, sticky=tk.W)
     android_dir_entry = tk.Entry(settings_window)
-    android_dir_entry.pack()
+    android_dir_entry.grid(row=1, column=1, padx=10, pady=10, sticky=tk.W)
     android_dir_entry.insert(0, transfersave.ANDROID_DIR)
 
     # pc dir entry
+    pc_dir_label = tk.Label(settings_window, text="Computer Directory")
+    pc_dir_label.grid(row=2, column=0, padx=10, pady=10, sticky=tk.W)
     pc_dir_entry = tk.Entry(settings_window)
-    pc_dir_entry.pack()
+    pc_dir_entry.grid(row=2, column=1, padx=10, pady=10, sticky=tk.W)
     pc_dir_entry.insert(0, transfersave.PC_DIR)
 
     # toggle backups
     backups_setting = tk.BooleanVar(value=transfersave.save_backups)
-    backups_checkbox = tk.Checkbutton(settings_window, text='Backups',variable=backups_setting, onvalue=True, offvalue=False)
-    backups_checkbox.pack()
+    backups_checkbox = tk.Checkbutton(settings_window, text='Make backups',variable=backups_setting, onvalue=True, offvalue=False)
+    backups_checkbox.grid(row=4, column=0, padx=10, pady=10, sticky=tk.W)
 
     def save_settings():
         # save directories
@@ -86,13 +90,13 @@ def open_settings():
         change_msg("saved settings!")
 
     save_button = tk.Button(settings_window, text='Save Settings', command=save_settings)
-    save_button.pack(side=tk.BOTTOM, pady=10)
+    save_button.grid(row=4, column=1, padx=10, pady=10, sticky=tk.W)
 
     kill_button = tk.Button(settings_window, text='Kill ADB Server', command=kill_adb_server)
-    kill_button.pack(side=tk.BOTTOM)
+    kill_button.grid(row=5, column=1, padx=10, pady=10, sticky=tk.W)
 
     start_button = tk.Button(settings_window, text='Start ADB Server', command=start_adb_server)
-    start_button.pack(side=tk.BOTTOM)
+    start_button.grid(row=5, column=0, padx=10, pady=10, sticky=tk.W)
 
 def kill_adb_server():
     kill_server_command = [str(transfersave.path_adb), "kill-server"]
