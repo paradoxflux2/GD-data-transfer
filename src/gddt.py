@@ -43,11 +43,12 @@ def transfer_button_click():
     if origin == "nothingselected":
         change_msg("you didnt select anything")
     else:
-        transfersave.transfersaves(origin)
+        result = transfersave.transfersaves(origin)
         if transfersave.exitstatus == 0:
             change_msg("save files transferred succesfully!")
         else:
-            change_msg(f"couldnt transfer files\nADB return code: {transfersave.exitstatus}")
+            #change_msg(f"couldnt transfer files\nADB return code: {transfersave.exitstatus}")
+            change_msg(f"couldnt transfer files\n{result.stderr.strip()}")
 
 # settings
 

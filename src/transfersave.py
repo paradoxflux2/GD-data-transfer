@@ -112,6 +112,7 @@ def transfersaves(origin):
         else:
             print(f"couldnt transfer {savefile}. return code: {exitstatus}")
             print(result.stderr)
+    return result
 
 def write_config(section, option, value):
     config.set(section, option, value)
