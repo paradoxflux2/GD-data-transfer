@@ -11,7 +11,7 @@ import transfersave
 
 root = tk.Tk()
 
-origin = "nothingselected"
+origin = None
 
 def change_msg(new_message):
     """change message in window and print same message"""
@@ -20,34 +20,29 @@ def change_msg(new_message):
 
 # button functions
 
-def phone_button_click():
-    """phone to computer click"""
+def set_origin(device):
     global origin
-    if origin == "phone": # extra useless code yay
-        change_msg("destination was already computer, are you stupid?")
+    if origin == device: # extra useless code yay
+        change_msg(f"destination was already {device}, are you stupid?")
     else:
-        origin = "phone"
-        change_msg("changed destination to computer")
+        origin = {device}
+        change_msg(f"changed destination to {device}")
+
+def phone_button_click():
+    set_origin("phone")
 
 def pc_button_click():
-    """computer to phone click"""
-    global origin
-    if origin == "computer":
-        change_msg("destination was already phone, are you stupid?")
-    else:
-        origin = "computer"
-        change_msg("changed destination to phone")
+    set_origin("computer")
 
 def transfer_button_click():
     """transfer button click"""
-    if origin == "nothingselected":
+    if origin == None:
         change_msg("you didnt select anything")
     else:
         result = transfersave.transfersaves(origin)
         if transfersave.exitstatus == 0:
             change_msg("save files transferred succesfully!")
         else:
-            #change_msg(f"couldnt transfer files\nADB return code: {transfersave.exitstatus}")
             change_msg(f"couldnt transfer files\n{result.stderr.strip()}")
 
 # settings
