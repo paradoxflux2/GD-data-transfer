@@ -36,7 +36,7 @@ def pc_button_click():
 
 def transfer_button_click():
     """transfer button click"""
-    if origin == None:
+    if origin is None:
         change_msg("you didnt select anything")
     else:
         result = transfersave.transfersaves(origin)
