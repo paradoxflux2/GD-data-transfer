@@ -91,7 +91,6 @@ def backup_file(origin, savefile):
         elif origin == "computer":
             cmd = [str(path_adb), "pull", f"{ANDROID_DIR}{savefile}", backups_dir_path]
             subprocess.run(cmd, capture_output=True, text=True, check=False)
-        
         print(f"saved backup at {backups_dir_path}")
 
 def transfersaves(origin):
@@ -114,18 +113,26 @@ def transfersaves(origin):
             print(f"couldnt transfer {savefile}. return code: {exitstatus}")
             print(result.stderr)
 
-def set_dir(dir, new_path):
-    global ANDROID_DIR
-    global PC_DIR
-
-    if dir == "android_dir":
-        ANDROID_DIR = new_path
-    elif dir == "pc_dir":
-        PC_DIR = new_path
-
-    config.set('Directories', dir, new_path)
+def write_config(section, option, value):
+    config.set(section, option, value)
     with open(path_config_file, 'w', encoding="utf-8") as configfile:
         config.write(configfile)
+
+def set_dir(dir, new_path):
+    if dir == "android_dir":
+        global ANDROID_DIR
+        ANDROID_DIR = new_path
+    elif dir == "pc_dir":
+        global PC_DIR
+        PC_DIR = new_path
+
+    write_config('Directories', dir, new_path)
+
+def set_backups_setting(value):
+    global save_backups
+    save_backups = value
+
+    write_config('Files', 'save_backups', str(save_backups).lower())
 
 if __name__ == "__main__":
     ORIGIN = input("transfer files from: (phone/computer): ").strip().lower()

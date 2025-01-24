@@ -69,10 +69,20 @@ def open_settings():
     pc_dir_entry.pack()
     pc_dir_entry.insert(0, transfersave.PC_DIR)
 
+    # toggle backups
+    backups_setting = tk.BooleanVar(value=transfersave.save_backups)
+    backups_checkbox = tk.Checkbutton(settings_window, text='Backups',variable=backups_setting, onvalue=True, offvalue=False)
+    backups_checkbox.pack()
+
     def save_settings():
+        # save directories
         transfersave.set_dir('android_dir', android_dir_entry.get())
         transfersave.set_dir('pc_dir', pc_dir_entry.get())
-        print(transfersave.ANDROID_DIR)
+
+        # save backups setting
+        backups_setting_value = backups_setting.get()
+        transfersave.set_backups_setting(backups_setting_value)
+
         change_msg("saved settings!")
 
     save_button = tk.Button(settings_window, text='Save Settings', command=save_settings)
