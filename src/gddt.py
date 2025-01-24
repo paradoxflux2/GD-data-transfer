@@ -25,7 +25,7 @@ def set_origin(device):
     if origin == device: # extra useless code yay
         change_msg(f"destination was already {device}, are you stupid?")
     else:
-        origin = {device}
+        origin = device
         change_msg(f"changed destination to {device}")
 
 def phone_button_click():
