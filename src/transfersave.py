@@ -6,7 +6,7 @@ GUI stuff is in gddt.py
 uses python 3.11
 """
 
-import os # for adb i will use ppadb one day
+import os
 import subprocess
 import sys
 from configparser import ConfigParser
@@ -23,12 +23,10 @@ if getattr(sys, 'frozen', False):
     # extends the sys module by a flag frozen=True and sets the app 
     # path into variable executable'.
     path_current_directory = Path(sys.executable).parent
-    print(f"running as bundle, on {os.name}")
+    bundle = True
 else:
     path_current_directory = Path(__file__).parent
-    print(f"running directly, on {os.name}")
-
-print(f"application directory: {path_current_directory}")
+    bundle = False
 
 def read_config():
     local_path_config_file = path_current_directory / "settings.ini"
@@ -54,11 +52,6 @@ def read_config():
 
 path_config_file, ANDROID_DIR, PC_DIR, filelist, save_backups = read_config()
 
-print(f"config path: {path_config_file}")
-print(f"android dir: {ANDROID_DIR}")
-print(f"pc dir: {PC_DIR}")
-print(f"saving backups: {save_backups}")
-
 # get adb path
 path_adb = path_current_directory / 'adb' / 'adb'
 if os.name == "nt":
@@ -67,8 +60,6 @@ if os.name == "nt":
 if not path_adb.is_file():
     print(f"adb not found at {path_adb}")
     sys.exit(1)
-
-print(f"adb path: {path_adb}")
 
 def backup_file(source, savefile):
     if save_backups:
@@ -135,6 +126,17 @@ def set_backups_setting(value):
     save_backups = value
 
     write_config('Files', 'save_backups', str(save_backups).lower())
+
+# print everything
+if bundle:
+    print(f"running as bundle, on {os.name}")
+else:
+    print(f"running directly, on {os.name}")
+print(f"application directory: {path_current_directory}")
+print(f"config path: {path_config_file}")
+print(f"android dir: {ANDROID_DIR}")
+print(f"pc dir: {PC_DIR}")
+print(f"adb path: {path_adb}")
 
 if __name__ == "__main__":
     SOURCE = input("transfer files from: (phone/computer): ").strip().lower()
