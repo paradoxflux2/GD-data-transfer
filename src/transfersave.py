@@ -28,6 +28,8 @@ else:
     path_current_directory = Path(__file__).parent
     bundle = False
 
+# config stuff
+
 def read_config():
     local_path_config_file = path_current_directory / "settings.ini"
 
@@ -51,6 +53,27 @@ def read_config():
     return local_path_config_file, android_dir, pc_dir, files, backups
 
 path_config_file, ANDROID_DIR, PC_DIR, filelist, save_backups = read_config()
+
+def write_config(section, option, value):
+    config.set(section, option, value)
+    with open(path_config_file, 'w', encoding="utf-8") as configfile:
+        config.write(configfile)
+
+def set_dir(dir, new_path):
+    if dir == "android_dir":
+        global ANDROID_DIR
+        ANDROID_DIR = new_path
+    elif dir == "pc_dir":
+        global PC_DIR
+        PC_DIR = new_path
+
+    write_config('Directories', dir, new_path)
+
+def set_backups_setting(value):
+    global save_backups
+    save_backups = value
+
+    write_config('Files', 'save_backups', str(save_backups).lower())
 
 # get adb path
 path_adb = path_current_directory / 'adb' / 'adb'
@@ -105,27 +128,6 @@ def transfersaves(source):
             print(result.stderr)
             break
     return result
-
-def write_config(section, option, value):
-    config.set(section, option, value)
-    with open(path_config_file, 'w', encoding="utf-8") as configfile:
-        config.write(configfile)
-
-def set_dir(dir, new_path):
-    if dir == "android_dir":
-        global ANDROID_DIR
-        ANDROID_DIR = new_path
-    elif dir == "pc_dir":
-        global PC_DIR
-        PC_DIR = new_path
-
-    write_config('Directories', dir, new_path)
-
-def set_backups_setting(value):
-    global save_backups
-    save_backups = value
-
-    write_config('Files', 'save_backups', str(save_backups).lower())
 
 # print everything
 if bundle:
