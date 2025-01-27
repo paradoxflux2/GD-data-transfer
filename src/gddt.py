@@ -178,16 +178,16 @@ def start_adb_server():
 def revert_last_transfer():
     # assign src and dest so they can be used in the messagebox
     if transfersave.last_transfer == "phonetopc":
-        src = "phone"
-        dest = "computer"
+        prev_src = "phone"
+        prev_dest = "computer"
     else:
-        src = "computer"
-        dest = "phone"
+        prev_src = "computer"
+        prev_dest = "phone"
 
     response = messagebox.askyesno("Confirm action",
     "Doing this will revert the last transfer you have made, potentially" \
-        f" making you lose progress if the save files in your {dest} are newer than the" \
-            f" ones in your {src}. \n\nAre you sure you want to continue?")
+        f" making you lose progress if the save files in your {prev_dest} are newer than the" \
+            f" ones in your {prev_src}. \n\nAre you sure you want to continue?")
     if response is True:
         transfersave.revert_last_transfer()
         change_msg("last transfer reverted")
