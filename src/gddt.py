@@ -144,10 +144,10 @@ def open_settings():
     revert_transfer_button.grid(row=4, column=1, padx=10, pady=10)
 
     # disable revert transfer button if backups are disabled or no transfers have been made
-    if not backups_setting or transfersave.last_transfer == "None":
-        revert_transfer_button.config(state=tk.DISABLED)
-    else:
+    if backups_setting.get() and transfersave.last_transfer != "None":
         revert_transfer_button.config(state=tk.NORMAL)
+    else:
+        revert_transfer_button.config(state=tk.DISABLED)
 
     # kill adb server button
     kill_button = tk.Button(settings_window, text='Kill ADB Server', command=kill_adb_server)
