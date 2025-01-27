@@ -172,25 +172,24 @@ def start_adb_server():
     change_msg("adb server started")
 
 def revert_last_transfer():
-    # assign src and dest so they can be used in the messagebox
+    # assign previous destination so it can be used in the messagebox
     if transfersave.last_transfer == "phonetopc":
-        prev_src = "phone"
         prev_dest = "computer"
     else:
-        prev_src = "computer"
         prev_dest = "phone"
 
     response = messagebox.askyesno("Confirm action",
     "Doing this will revert the last transfer you have made, potentially" \
         f" making you lose progress if the save files in your {prev_dest} are newer than the" \
-            f" ones in your {prev_src}. \n\nAre you sure you want to continue?")
+            f" backups made by GDDT. \n\nAre you sure you want to continue?")
     if response is True:
         transfersave.revert_last_transfer()
         change_msg("last transfer reverted")
     if response is False:
         change_msg("action cancelled")
 
-def main():
+
+if __name__ == "__main__":
     root.title("GD Data Transfer")
     root.geometry("500x300")
     root.resizable(0, 0)
@@ -198,6 +197,3 @@ def main():
     create_ui()
 
     root.mainloop()
-
-if __name__ == "__main__":
-    main()
