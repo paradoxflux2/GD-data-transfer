@@ -6,6 +6,7 @@ uses python 3.11
 """
 
 import tkinter as tk
+from tkinter import messagebox
 import subprocess
 import transfersave
 
@@ -175,8 +176,23 @@ def start_adb_server():
     change_msg("adb server started")
 
 def revert_last_transfer():
-    transfersave.revert_last_transfer()
-    change_msg("last transfer reverted")
+    # assign src and dest so they can be used in the messagebox
+    if transfersave.last_transfer == "phonetopc":
+        src = "phone"
+        dest = "computer"
+    else:
+        src = "computer"
+        dest = "phone"
+
+    response = messagebox.askyesno("Confirm action",
+    "Doing this will revert the last transfer you have made, potentially" \
+        f" making you lose progress if the save files in your {dest} are newer than the" \
+            f" ones in your {src}. \n\nAre you sure you want to continue?")
+    if response is True:
+        transfersave.revert_last_transfer()
+        change_msg("last transfer reverted")
+    if response is False:
+        change_msg("action cancelled")
 
 def main():
     root.title("GD Data Transfer")
