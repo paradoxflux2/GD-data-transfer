@@ -15,7 +15,10 @@ root = tk.Tk()
 source = None
 label = None
 
+# === main window ===
+
 def create_ui():
+    """create the ui for the main window"""
     global label
 
     # create a menubar
@@ -53,7 +56,7 @@ def create_ui():
 
 direction = {"phone": "computer", "computer": "phone"} # if source is phone, destination is computer, etc
 
-# main window functions
+# === main window functions ===
 
 def set_source(device):
     global source
@@ -90,9 +93,10 @@ def change_msg(new_message):
     print(new_message)
     label.config(text = new_message)
 
-# settings
+# === settings ===
 
 def open_settings():
+    """open settings window"""
 
     def save_settings():
         # save directories
@@ -160,6 +164,8 @@ def open_settings():
     # save settings button
     save_button = tk.Button(settings_window, text='Save Settings', command=save_settings)
     save_button.grid(row=6, column=1, padx=10, pady=10)
+
+# === settings functions ===
 
 def kill_adb_server():
     kill_server_command = [str(transfersave.path_adb), "kill-server"]

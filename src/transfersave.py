@@ -28,7 +28,7 @@ else:
     path_current_directory = Path(__file__).parent
     IS_BUNDLE = False
 
-# config stuff
+# === config ===
 
 def read_config():
     """take things from config"""
@@ -82,7 +82,7 @@ def set_backups_setting(value):
 
     # convert to string and lowercase so that configparser takes it as a boolean
     # (i actually think its case-insensitive but at this point it's so ingrained into the code
-    # that it must be lowercase)
+    # that its easier to leave it like that)
     write_config('Files', 'save_backups', str(save_backups).lower())
 
 def set_last_transfer(new_last_transfer):
