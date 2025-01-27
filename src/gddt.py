@@ -52,6 +52,8 @@ def create_ui():
 
 direction = {"phone": "computer", "computer": "phone"} # if source is phone, destination is computer, etc
 
+# main window functions
+
 def set_source(device):
     global source
     if source == device: # extra useless code yay
@@ -59,8 +61,6 @@ def set_source(device):
     else:
         source = device
         change_msg(f"changed destination to {direction[source]}")
-
-# button functions
 
 def phone_button_click():
     set_source("phone")
@@ -92,31 +92,6 @@ def change_msg(new_message):
 # settings
 
 def open_settings():
-    settings_window = tk.Toplevel()
-    settings_window.title("Settings")
-    settings_window.resizable(0, 0)
-
-    configlabel = tk.Label(settings_window, text="Settings", font=('Arial', 12))
-    configlabel.grid(row=0, column=0, columnspan=2, pady=10, sticky=tk.EW)
-
-    # android dir entry
-    android_dir_label = tk.Label(settings_window, text="Android Directory")
-    android_dir_label.grid(row=1, column=0, padx=10, pady=10)
-    android_dir_entry = tk.Entry(settings_window)
-    android_dir_entry.grid(row=1, column=1, padx=10, pady=10)
-    android_dir_entry.insert(0, transfersave.ANDROID_DIR)
-
-    # pc dir entry
-    pc_dir_label = tk.Label(settings_window, text="Computer Directory")
-    pc_dir_label.grid(row=2, column=0, padx=10, pady=10)
-    pc_dir_entry = tk.Entry(settings_window)
-    pc_dir_entry.grid(row=2, column=1, padx=10, pady=10)
-    pc_dir_entry.insert(0, transfersave.PC_DIR)
-
-    # toggle backups
-    backups_setting = tk.BooleanVar(value=transfersave.save_backups)
-    backups_checkbox = tk.Checkbutton(settings_window, text='Make backups',variable=backups_setting, onvalue=True, offvalue=False)
-    backups_checkbox.grid(row=4, column=0, padx=10, pady=10)
 
     def save_settings():
         # save directories
@@ -129,14 +104,49 @@ def open_settings():
 
         change_msg("saved settings!")
 
-    save_button = tk.Button(settings_window, text='Save Settings', command=save_settings)
-    save_button.grid(row=4, column=1, padx=10, pady=10)
+    settings_window = tk.Toplevel()
+    settings_window.title("Settings")
+    settings_window.resizable(0, 0)
 
+    configlabel = tk.Label(settings_window, text="Settings", font=('Arial', 12))
+    configlabel.grid(row=0, column=0, columnspan=2, pady=10, sticky=tk.EW)
+
+    # android dir label
+    android_dir_label = tk.Label(settings_window, text="Android Directory")
+    android_dir_label.grid(row=1, column=0, padx=10, pady=10)
+    # android dir entry
+    android_dir_entry = tk.Entry(settings_window)
+    android_dir_entry.grid(row=1, column=1, padx=10, pady=10)
+    android_dir_entry.insert(0, transfersave.ANDROID_DIR)
+
+    # pc dir label
+    pc_dir_label = tk.Label(settings_window, text="Computer Directory")
+    pc_dir_label.grid(row=2, column=0, padx=10, pady=10)
+    # pc dir entry
+    pc_dir_entry = tk.Entry(settings_window)
+    pc_dir_entry.grid(row=2, column=1, padx=10, pady=10)
+    pc_dir_entry.insert(0, transfersave.PC_DIR)
+
+    # toggle backups
+    backups_setting = tk.BooleanVar(value=transfersave.save_backups)
+    backups_checkbox = tk.Checkbutton(settings_window, text='Make backups',variable=backups_setting, onvalue=True, offvalue=False)
+    backups_checkbox.grid(row=4, column=0, padx=10, pady=10)
+
+    # undo transfer button
+    revert_transfer_button = tk.Button(settings_window, text='Revert Last Transfer', command=revert_last_transfer)
+    revert_transfer_button.grid(row=4, column=1, padx=10, pady=10)
+
+    # kill adb server button
     kill_button = tk.Button(settings_window, text='Kill ADB Server', command=kill_adb_server)
     kill_button.grid(row=5, column=1, padx=10, pady=10)
 
+    # start adb server button
     start_button = tk.Button(settings_window, text='Start ADB Server', command=start_adb_server)
     start_button.grid(row=5, column=0, padx=10, pady=10)
+
+    # save settings button
+    save_button = tk.Button(settings_window, text='Save Settings', command=save_settings)
+    save_button.grid(row=6, column=1, padx=10, pady=10)
 
 def kill_adb_server():
     kill_server_command = [str(transfersave.path_adb), "kill-server"]
@@ -147,6 +157,10 @@ def start_adb_server():
     start_server_command = [str(transfersave.path_adb), "start-server"]
     subprocess.run(start_server_command, capture_output=True, text=True, check=False)
     change_msg("adb server started")
+
+def revert_last_transfer():
+    transfersave.revert_last_transfer()
+    change_msg("last transfer reverted")
 
 def main():
     root.title("GD Data Transfer")

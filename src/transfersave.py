@@ -50,9 +50,12 @@ def read_config():
     # if backups will be saved
     backups = config.getboolean('Files', 'save_backups')
 
-    return local_path_config_file, android_dir, pc_dir, files, backups
+    # the last transfer done. "None" by default
+    last_transfer_done = config.get('Files', 'last_transfer')
 
-path_config_file, ANDROID_DIR, PC_DIR, filelist, save_backups = read_config()
+    return local_path_config_file, android_dir, pc_dir, files, backups, last_transfer_done
+
+path_config_file, ANDROID_DIR, PC_DIR, filelist, save_backups, last_transfer = read_config()
 
 def write_config(section, option, value):
     config.set(section, option, value)
@@ -74,6 +77,12 @@ def set_backups_setting(value):
     save_backups = value
 
     write_config('Files', 'save_backups', str(save_backups).lower())
+
+def set_last_transfer(new_last_transfer):
+    global last_transfer
+    last_transfer = new_last_transfer
+
+    write_config('Files', 'last_transfer', new_last_transfer)
 
 # get adb path
 path_adb = path_current_directory / 'adb' / 'adb'
@@ -107,14 +116,39 @@ def backup_file(source, savefile):
             subprocess.run(cmd, capture_output=True, text=True, check=False)
         print(f"saved backup at {backups_dir_path}")
 
+def revert_last_transfer():
+    for savefile in filelist:
+        backups_dir = path_current_directory / 'backups'
+        backups_dir_path = backups_dir / savefile
+
+        if last_transfer == "phonetopc":
+            NEW_PC_DIR = Path(PC_DIR)
+            savefile_path = NEW_PC_DIR / savefile
+            if savefile_path.is_file():
+                # adapt copy command to each os
+                if os.name == "nt":
+                    cmd = ['copy', backups_dir_path, f"{PC_DIR}{savefile}"]
+                else:
+                    cmd = ['cp', backups_dir_path, f"{PC_DIR}{savefile}"]
+
+                result = subprocess.call(cmd)
+        elif last_transfer == "pctophone":
+            cmd = [str(path_adb), "push", backups_dir_path, f"{ANDROID_DIR}{savefile}"]
+            subprocess.run(cmd, capture_output=True, text=True, check=False)
+        else:
+            print("stupid")
+            break
+
 def transfersaves(source):
     global exitstatus
     for savefile in filelist:
         backup_file(source, savefile)
         if source == "phone": # phone to computer
             command = [str(path_adb), "pull", f"{ANDROID_DIR}{savefile}", str(PC_DIR)]
+            set_last_transfer("phonetopc")
         elif source == "computer": # computer to phone
             command = [str(path_adb), "push", f"{PC_DIR}{savefile}", ANDROID_DIR]
+            set_last_transfer("pctophone")
         else:
             print("invalid source")
             break
@@ -126,6 +160,7 @@ def transfersaves(source):
         else:
             print(f"couldnt transfer {savefile}. return code: {exitstatus}")
             print(result.stderr)
+            #set_last_transfer("None")
             break
     return result
 
@@ -139,6 +174,7 @@ print(f"config path: {path_config_file}")
 print(f"android dir: {ANDROID_DIR}")
 print(f"pc dir: {PC_DIR}")
 print(f"adb path: {path_adb}")
+print(f"last transfer: {last_transfer}")
 
 if __name__ == "__main__":
     SOURCE = input("transfer files from: (phone/computer): ").strip().lower()
