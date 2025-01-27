@@ -23,14 +23,15 @@ if getattr(sys, 'frozen', False):
     # extends the sys module by a flag frozen=True and sets the app 
     # path into variable executable'.
     path_current_directory = Path(sys.executable).parent
-    bundle = True
+    IS_BUNDLE = True
 else:
     path_current_directory = Path(__file__).parent
-    bundle = False
+    IS_BUNDLE = False
 
 # config stuff
 
 def read_config():
+    """take things from config"""
     local_path_config_file = path_current_directory / "settings.ini"
 
     # check if config file exists
@@ -58,24 +59,30 @@ def read_config():
 path_config_file, ANDROID_DIR, PC_DIR, filelist, save_backups, last_transfer = read_config()
 
 def write_config(section, option, value):
+    """write to config"""
     config.set(section, option, value)
     with open(path_config_file, 'w', encoding="utf-8") as configfile:
         config.write(configfile)
 
-def set_dir(dir, new_path):
-    if dir == "android_dir":
+def set_dir(directory, new_path):
+    """set new directory and write it to config"""
+    if directory == "android_dir":
         global ANDROID_DIR
         ANDROID_DIR = new_path
-    elif dir == "pc_dir":
+    elif directory == "pc_dir":
         global PC_DIR
         PC_DIR = new_path
 
-    write_config('Directories', dir, new_path)
+    write_config('Directories', directory, new_path)
 
 def set_backups_setting(value):
+    """change backups setting to a boolean value"""
     global save_backups
     save_backups = value
 
+    # convert to string and lowercase so that configparser takes it as a boolean
+    # (i actually think its case-insensitive but at this point it's so ingrained into the code
+    # that it must be lowercase)
     write_config('Files', 'save_backups', str(save_backups).lower())
 
 def set_last_transfer(new_last_transfer):
@@ -102,8 +109,8 @@ def backup_file(source, savefile):
             os.makedirs(backups_dir)
 
         if source == "phone":
-            NEW_PC_DIR = Path(PC_DIR)
-            savefile_path = NEW_PC_DIR / savefile
+            new_pc_dir = Path(PC_DIR)
+            savefile_path = new_pc_dir / savefile
             if savefile_path.is_file():
                 # adapt copy command to each os
                 if os.name == "nt":
@@ -111,6 +118,7 @@ def backup_file(source, savefile):
                 else:
                     cmd = ['cp', f"{PC_DIR}{savefile}", backups_dir_path]
                 result = subprocess.call(cmd)
+                print(result)
         elif source == "computer":
             cmd = [str(path_adb), "pull", f"{ANDROID_DIR}{savefile}", backups_dir_path]
             subprocess.run(cmd, capture_output=True, text=True, check=False)
@@ -122,8 +130,8 @@ def revert_last_transfer():
         backups_dir_path = backups_dir / savefile
 
         if last_transfer == "phonetopc":
-            NEW_PC_DIR = Path(PC_DIR)
-            savefile_path = NEW_PC_DIR / savefile
+            new_pc_dir = Path(PC_DIR)
+            savefile_path = new_pc_dir / savefile
             if savefile_path.is_file():
                 # adapt copy command to each os
                 if os.name == "nt":
@@ -132,6 +140,7 @@ def revert_last_transfer():
                     cmd = ['cp', backups_dir_path, f"{PC_DIR}{savefile}"]
 
                 result = subprocess.call(cmd)
+                print(result)
         elif last_transfer == "pctophone":
             cmd = [str(path_adb), "push", backups_dir_path, f"{ANDROID_DIR}{savefile}"]
             subprocess.run(cmd, capture_output=True, text=True, check=False)
@@ -161,11 +170,12 @@ def transfersaves(source):
             print(f"couldnt transfer {savefile}. return code: {exitstatus}")
             print(result.stderr)
             set_last_transfer("None")
+            print("all other files have been skipped")
             break
     return result
 
 # print everything
-if bundle:
+if IS_BUNDLE:
     print(f"running as bundle, on {os.name}")
 else:
     print(f"running directly, on {os.name}")
@@ -174,7 +184,7 @@ print(f"config path: {path_config_file}")
 print(f"android dir: {ANDROID_DIR}")
 print(f"pc dir: {PC_DIR}")
 print(f"adb path: {path_adb}")
-print(f"last transfer: {last_transfer}")
+#print(f"last transfer: {last_transfer}")
 
 if __name__ == "__main__":
     SOURCE = input("transfer files from: (phone/computer): ").strip().lower()
