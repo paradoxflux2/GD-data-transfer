@@ -160,7 +160,7 @@ def transfersaves(source):
         else:
             print(f"couldnt transfer {savefile}. return code: {exitstatus}")
             print(result.stderr)
-            #set_last_transfer("None")
+            set_last_transfer("None")
             break
     return result
 
