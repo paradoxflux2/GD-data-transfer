@@ -77,7 +77,11 @@ def transfer_button_click():
         if transfersave.exitstatus == 0:
             change_msg("save files transferred succesfully!")
         else:
-            change_msg(f"couldnt transfer files\n{result.stderr.strip()}")
+            error_msg = result.stderr.strip()
+            if "no devices/emulators found" in error_msg:
+                error_msg = "is your device connected?"
+        
+            change_msg(f"couldnt transfer save files\n{error_msg}")
 
 
 def change_msg(new_message):
