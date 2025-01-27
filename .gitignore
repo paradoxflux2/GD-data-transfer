@@ -173,3 +173,4 @@ cython_debug/
 # gddt
 src/settings.ini
 backups/
+adb/

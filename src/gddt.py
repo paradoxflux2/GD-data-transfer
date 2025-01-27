@@ -102,6 +102,12 @@ def open_settings():
         backups_setting_value = backups_setting.get()
         transfersave.set_backups_setting(backups_setting_value)
 
+        # disable revert transfer button if backups are disabled
+        if backups_setting_value is False:
+            revert_transfer_button.config(state=tk.DISABLED)
+        else:
+            revert_transfer_button.config(state=tk.NORMAL)
+
         change_msg("saved settings!")
 
     settings_window = tk.Toplevel()
@@ -132,9 +138,19 @@ def open_settings():
     backups_checkbox = tk.Checkbutton(settings_window, text='Make backups',variable=backups_setting, onvalue=True, offvalue=False)
     backups_checkbox.grid(row=4, column=0, padx=10, pady=10)
 
-    # undo transfer button
+    # revert transfer button
     revert_transfer_button = tk.Button(settings_window, text='Revert Last Transfer', command=revert_last_transfer)
     revert_transfer_button.grid(row=4, column=1, padx=10, pady=10)
+
+    # disable revert transfer button if backups are disabled
+    if backups_setting is False:
+        revert_transfer_button.config(state=tk.DISABLED)
+    else:
+        revert_transfer_button.config(state=tk.NORMAL)
+
+    # disable revert transfer button if no transfers have been made
+    if transfersave.last_transfer == "None":
+        revert_transfer_button.config(state=tk.DISABLED)
 
     # kill adb server button
     kill_button = tk.Button(settings_window, text='Kill ADB Server', command=kill_adb_server)
