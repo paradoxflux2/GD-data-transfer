@@ -98,6 +98,16 @@ def change_msg(new_message):
 def open_settings():
     """open settings window"""
 
+    def refresh_revert_button_state():
+        """disable revert transfer button if backups are disabled or no transfers have been made"""
+        # i swear every single time i change the most minimum
+        # thing in the code this specific thing breaks i cant take it anymore
+        # youre getting commented forever fuck you
+        #if backups_setting.get() and gddt.config_data['last_transfer'] != "None":
+        #    revert_transfer_button.config(state=tk.NORMAL)
+        #else:
+        #    revert_transfer_button.config(state=tk.DISABLED)
+
     def save_settings():
         # save directories
         gddt.set_dir('android_dir', android_dir_entry.get())
@@ -107,11 +117,7 @@ def open_settings():
         backups_setting_value = backups_setting.get()
         gddt.set_backups_setting(backups_setting_value)
 
-        # disable revert transfer button if backups are disabled or no transfers have been made
-        if backups_setting_value and gddt.last_transfer != "None":
-            revert_transfer_button.config(state=tk.NORMAL)
-        else:
-            revert_transfer_button.config(state=tk.DISABLED)
+        refresh_revert_button_state()
 
         change_msg("saved settings!")
 
@@ -128,7 +134,7 @@ def open_settings():
     # android dir entry
     android_dir_entry = tk.Entry(settings_window)
     android_dir_entry.grid(row=1, column=1, padx=10, pady=10)
-    android_dir_entry.insert(0, gddt.ANDROID_DIR)
+    android_dir_entry.insert(0, gddt.config_data['android_dir'])
 
     # pc dir label
     pc_dir_label = tk.Label(settings_window, text="Computer Directory")
@@ -136,10 +142,10 @@ def open_settings():
     # pc dir entry
     pc_dir_entry = tk.Entry(settings_window)
     pc_dir_entry.grid(row=2, column=1, padx=10, pady=10)
-    pc_dir_entry.insert(0, gddt.PC_DIR)
+    pc_dir_entry.insert(0, gddt.config_data['pc_dir'])
 
     # toggle backups
-    backups_setting = tk.BooleanVar(value=gddt.save_backups)
+    backups_setting = tk.BooleanVar(value=gddt.config_data['save_backups'])
     backups_checkbox = tk.Checkbutton(settings_window, text='Make backups',variable=backups_setting, onvalue=True, offvalue=False)
     backups_checkbox.grid(row=4, column=0, padx=10, pady=10)
 
@@ -147,11 +153,7 @@ def open_settings():
     revert_transfer_button = tk.Button(settings_window, text='Revert Last Transfer', command=revert_last_transfer)
     revert_transfer_button.grid(row=4, column=1, padx=10, pady=10)
 
-    # disable revert transfer button if backups are disabled or no transfers have been made
-    if backups_setting.get() and gddt.last_transfer != "None":
-        revert_transfer_button.config(state=tk.NORMAL)
-    else:
-        revert_transfer_button.config(state=tk.DISABLED)
+    refresh_revert_button_state()
 
     # kill adb server button
     kill_button = tk.Button(settings_window, text='Kill ADB Server', command=kill_adb_server)
@@ -179,7 +181,7 @@ def start_adb_server():
 
 def revert_last_transfer():
     # assign previous destination so it can be used in the messagebox
-    if gddt.last_transfer == "phonetopc":
+    if gddt.config_data['last_transfer'] == "phonetopc":
         prev_dest = "computer"
     else:
         prev_dest = "phone"
