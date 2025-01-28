@@ -100,13 +100,11 @@ def open_settings():
 
     def refresh_revert_button_state():
         """disable revert transfer button if backups are disabled or no transfers have been made"""
-        # i swear every single time i change the most minimum
-        # thing in the code this specific thing breaks i cant take it anymore
-        # youre getting commented forever fuck you
-        #if backups_setting.get() and gddt.config_data['last_transfer'] != "None":
-        #    revert_transfer_button.config(state=tk.NORMAL)
-        #else:
-        #    revert_transfer_button.config(state=tk.DISABLED)
+        # this somehow fixed itself so thats cool
+        if backups_setting.get() and gddt.config_data['last_transfer'] != "None":
+            revert_transfer_button.config(state=tk.NORMAL)
+        else:
+            revert_transfer_button.config(state=tk.DISABLED)
 
     def save_settings():
         # save directories
