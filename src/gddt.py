@@ -1,205 +1,191 @@
 """
-this is (supposed to be) only the gui, most other stuff
-is in transfersave.py
+this file handles reading config and transferring data
+
+GUI stuff is in gddt-gui.py
 
 uses python 3.11
 """
 
-import tkinter as tk
-from tkinter import messagebox
+import os
 import subprocess
-import transfersave
+import sys
+from configparser import ConfigParser
+from pathlib import Path
 
-root = tk.Tk()
+config = ConfigParser(interpolation=None)
 
-source = None
-label = None
+exitstatus = ""
 
-# === main window ===
+# get application path (thank you random person from stackoverflow
+# that wrote this like 5 years ago)
+if getattr(sys, 'frozen', False):
+    # If the application is run as a bundle, the PyInstaller bootloader
+    # extends the sys module by a flag frozen=True and sets the app 
+    # path into variable executable'.
+    path_current_directory = Path(sys.executable).parent
+    IS_BUNDLE = True
+else:
+    path_current_directory = Path(__file__).parent
+    IS_BUNDLE = False
 
-def create_ui():
-    """create the ui for the main window"""
-    global label
+# === config ===
 
-    # create a menubar
-    menubar = tk.Menu(root)
-    root.config(menu=menubar)
+def read_config():
+    """take things from config"""
+    local_path_config_file = path_current_directory / "settings.ini"
 
-    help_menu = tk.Menu(menubar, tearoff=False)
+    # check if config file exists
+    if not local_path_config_file.is_file():
+        print(f"settings.ini not found at {local_path_config_file}")
+        sys.exit(1)
 
-    # Help menu buttons
-    help_menu.add_command(label='Settings', command=open_settings)
-    help_menu.add_command(label='Exit', command=root.destroy)
+    config.read(local_path_config_file)
 
-    # add the Help menu to the menubar
-    menubar.add_cascade(label="Help", menu=help_menu)
+    android_dir = config.get('Directories', 'android_dir')
+    pc_dir = os.path.expandvars(config.get('Directories', 'pc_dir'))
 
-    # title
-    title = tk.Label(root, text="GD Data Transfer", font=('Arial', 18))
-    title.pack(padx=20, pady=20)
+    # files that will be transferred (ik this technically could
+    # also be used for things outside gd but who cares lol)
+    files = config.get('Files', 'file_list').split(',')
 
-    # message
-    label = tk.Label(root, text="please select a destination first", font=('Arial', 12))
-    label.pack(side=tk.BOTTOM, padx=20, pady=20)
+    # if backups will be saved
+    backups = config.getboolean('Files', 'save_backups')
 
-    # transfer button
-    transfer_button = tk.Button(root, text='Transfer', command=transfer_button_click)
-    transfer_button.pack(side=tk.BOTTOM)
+    # the last transfer done. "None" by default
+    last_transfer_done = config.get('Files', 'last_transfer')
 
-    # phone to computer button
-    phone_button = tk.Button(root, text='Phone to computer', command=phone_button_click)
-    phone_button.pack(pady=3)
+    return local_path_config_file, android_dir, pc_dir, files, backups, last_transfer_done
 
-    # computer to phone button
-    pc_button = tk.Button(root, text='Computer to phone', command=pc_button_click)
-    pc_button.pack(pady=3)
+path_config_file, ANDROID_DIR, PC_DIR, filelist, save_backups, last_transfer = read_config()
 
-direction = {"phone": "computer", "computer": "phone"} # if source is phone, destination is computer, etc
+def write_config(section, option, value):
+    """write to config"""
+    config.set(section, option, value)
+    with open(path_config_file, 'w', encoding="utf-8") as configfile:
+        config.write(configfile)
 
-# === main window functions ===
+def set_dir(directory, new_path):
+    """set new directory and write it to config"""
+    if directory == "android_dir":
+        global ANDROID_DIR
+        ANDROID_DIR = new_path
+    elif directory == "pc_dir":
+        global PC_DIR
+        PC_DIR = new_path
 
-def set_source(device):
-    global source
-    if source == device: # extra useless code yay
-        change_msg(f"destination was already {direction[source]}, are you stupid?")
-    else:
-        source = device
-        change_msg(f"changed destination to {direction[source]}")
+    write_config('Directories', directory, new_path)
 
-def phone_button_click():
-    set_source("phone")
+def set_backups_setting(value):
+    """change backups setting to a boolean value"""
+    global save_backups
+    save_backups = value
 
-def pc_button_click():
-    set_source("computer")
+    # convert to string and lowercase so that configparser takes it as a boolean
+    # (i actually think its case-insensitive but at this point it's so ingrained into the code
+    # that its easier to leave it like that)
+    write_config('Files', 'save_backups', str(save_backups).lower())
 
-def transfer_button_click():
-    """transfer button click"""
-    if source is None:
-        change_msg("you didnt select anything")
-    else:
-        result = transfersave.transfersaves(source)
-        if transfersave.exitstatus == 0:
-            change_msg("save files transferred succesfully!")
-        else:
-            error_msg = result.stderr.strip()
-            if "no devices/emulators found" in error_msg:
-                error_msg = "is your device connected?"
-        
-            change_msg(f"couldnt transfer save files\n{error_msg}")
+def set_last_transfer(new_last_transfer):
+    global last_transfer
+    last_transfer = new_last_transfer
 
+    write_config('Files', 'last_transfer', new_last_transfer)
 
-def change_msg(new_message):
-    """change message in window and print same message"""
-    print(new_message)
-    label.config(text = new_message)
+# get adb path
+path_adb = path_current_directory / 'adb' / 'adb'
+if os.name == "nt":
+    path_adb = path_adb.with_name('adb.exe')
 
-# === settings ===
+if not path_adb.is_file():
+    print(f"adb not found at {path_adb}")
+    sys.exit(1)
 
-def open_settings():
-    """open settings window"""
+def backup_file(source, savefile):
+    if save_backups:
+        # create backups directory
+        backups_dir = path_current_directory / 'backups'
+        backups_dir_path = backups_dir / savefile
+        if not os.path.exists(backups_dir):
+            os.makedirs(backups_dir)
 
-    def save_settings():
-        # save directories
-        transfersave.set_dir('android_dir', android_dir_entry.get())
-        transfersave.set_dir('pc_dir', pc_dir_entry.get())
-
-        # save backups setting
-        backups_setting_value = backups_setting.get()
-        transfersave.set_backups_setting(backups_setting_value)
-
-        # disable revert transfer button if backups are disabled or no transfers have been made
-        if backups_setting_value and transfersave.last_transfer != "None":
-            revert_transfer_button.config(state=tk.NORMAL)
-        else:
-            revert_transfer_button.config(state=tk.DISABLED)
-
-        change_msg("saved settings!")
-
-    settings_window = tk.Toplevel()
-    settings_window.title("Settings")
-    settings_window.resizable(0, 0)
-
-    configlabel = tk.Label(settings_window, text="Settings", font=('Arial', 12))
-    configlabel.grid(row=0, column=0, columnspan=2, pady=10, sticky=tk.EW)
-
-    # android dir label
-    android_dir_label = tk.Label(settings_window, text="Android Directory")
-    android_dir_label.grid(row=1, column=0, padx=10, pady=10)
-    # android dir entry
-    android_dir_entry = tk.Entry(settings_window)
-    android_dir_entry.grid(row=1, column=1, padx=10, pady=10)
-    android_dir_entry.insert(0, transfersave.ANDROID_DIR)
-
-    # pc dir label
-    pc_dir_label = tk.Label(settings_window, text="Computer Directory")
-    pc_dir_label.grid(row=2, column=0, padx=10, pady=10)
-    # pc dir entry
-    pc_dir_entry = tk.Entry(settings_window)
-    pc_dir_entry.grid(row=2, column=1, padx=10, pady=10)
-    pc_dir_entry.insert(0, transfersave.PC_DIR)
-
-    # toggle backups
-    backups_setting = tk.BooleanVar(value=transfersave.save_backups)
-    backups_checkbox = tk.Checkbutton(settings_window, text='Make backups',variable=backups_setting, onvalue=True, offvalue=False)
-    backups_checkbox.grid(row=4, column=0, padx=10, pady=10)
-
-    # revert transfer button
-    revert_transfer_button = tk.Button(settings_window, text='Revert Last Transfer', command=revert_last_transfer)
-    revert_transfer_button.grid(row=4, column=1, padx=10, pady=10)
-
-    # disable revert transfer button if backups are disabled or no transfers have been made
-    if backups_setting.get() and transfersave.last_transfer != "None":
-        revert_transfer_button.config(state=tk.NORMAL)
-    else:
-        revert_transfer_button.config(state=tk.DISABLED)
-
-    # kill adb server button
-    kill_button = tk.Button(settings_window, text='Kill ADB Server', command=kill_adb_server)
-    kill_button.grid(row=5, column=1, padx=10, pady=10)
-
-    # start adb server button
-    start_button = tk.Button(settings_window, text='Start ADB Server', command=start_adb_server)
-    start_button.grid(row=5, column=0, padx=10, pady=10)
-
-    # save settings button
-    save_button = tk.Button(settings_window, text='Save Settings', command=save_settings)
-    save_button.grid(row=6, column=1, padx=10, pady=10)
-
-# === settings functions ===
-
-def kill_adb_server():
-    kill_server_command = [str(transfersave.path_adb), "kill-server"]
-    subprocess.run(kill_server_command, capture_output=True, text=True, check=False)
-    change_msg("adb server is kil")
-
-def start_adb_server():
-    start_server_command = [str(transfersave.path_adb), "start-server"]
-    subprocess.run(start_server_command, capture_output=True, text=True, check=False)
-    change_msg("adb server started")
+        if source == "phone":
+            new_pc_dir = Path(PC_DIR)
+            savefile_path = new_pc_dir / savefile
+            if savefile_path.is_file():
+                # adapt copy command to each os
+                if os.name == "nt":
+                    cmd = ['copy', f"{PC_DIR}{savefile}", backups_dir_path]
+                else:
+                    cmd = ['cp', f"{PC_DIR}{savefile}", backups_dir_path]
+                result = subprocess.call(cmd)
+                print(result)
+        elif source == "computer":
+            cmd = [str(path_adb), "pull", f"{ANDROID_DIR}{savefile}", backups_dir_path]
+            subprocess.run(cmd, capture_output=True, text=True, check=False)
+        print(f"saved backup at {backups_dir_path}")
 
 def revert_last_transfer():
-    # assign previous destination so it can be used in the messagebox
-    if transfersave.last_transfer == "phonetopc":
-        prev_dest = "computer"
-    else:
-        prev_dest = "phone"
+    for savefile in filelist:
+        backups_dir = path_current_directory / 'backups'
+        backups_dir_path = backups_dir / savefile
 
-    response = messagebox.askyesno("Confirm action",
-    "Doing this will revert the last transfer you have made, potentially" \
-        f" making you lose progress if the save files in your {prev_dest} are newer than the" \
-            f" backups made by GDDT. \n\nAre you sure you want to continue?")
-    if response is True:
-        transfersave.revert_last_transfer()
-        change_msg("last transfer reverted")
-    if response is False:
-        change_msg("action cancelled")
+        if last_transfer == "phonetopc":
+            new_pc_dir = Path(PC_DIR)
+            savefile_path = new_pc_dir / savefile
+            if savefile_path.is_file():
+                # adapt copy command to each os
+                if os.name == "nt":
+                    cmd = ['copy', backups_dir_path, f"{PC_DIR}{savefile}"]
+                else:
+                    cmd = ['cp', backups_dir_path, f"{PC_DIR}{savefile}"]
 
+                result = subprocess.call(cmd)
+                print(result)
+        elif last_transfer == "pctophone":
+            cmd = [str(path_adb), "push", backups_dir_path, f"{ANDROID_DIR}{savefile}"]
+            subprocess.run(cmd, capture_output=True, text=True, check=False)
+        else:
+            print("stupid")
+            break
+
+def transfersaves(source):
+    global exitstatus
+    for savefile in filelist:
+        backup_file(source, savefile)
+        if source == "phone": # phone to computer
+            command = [str(path_adb), "pull", f"{ANDROID_DIR}{savefile}", str(PC_DIR)]
+            set_last_transfer("phonetopc")
+        elif source == "computer": # computer to phone
+            command = [str(path_adb), "push", f"{PC_DIR}{savefile}", ANDROID_DIR]
+            set_last_transfer("pctophone")
+        else:
+            print("invalid source")
+            break
+
+        result = subprocess.run(command, capture_output=True, text=True, check=False)
+        exitstatus = result.returncode
+        if exitstatus == 0:
+            print(f"{savefile} succesfully transferred")
+        else:
+            print(f"couldnt transfer {savefile}. return code: {exitstatus}")
+            print(result.stderr)
+            set_last_transfer("None")
+            print("all other files have been skipped")
+            break
+    return result
+
+# print everything
+if IS_BUNDLE:
+    print(f"running as bundle, on {os.name}")
+else:
+    print(f"running directly, on {os.name}")
+print(f"application directory: {path_current_directory}")
+print(f"config path: {path_config_file}")
+print(f"android dir: {ANDROID_DIR}")
+print(f"pc dir: {PC_DIR}")
+print(f"adb path: {path_adb}")
+#print(f"last transfer: {last_transfer}")
 
 if __name__ == "__main__":
-    root.title("GD Data Transfer")
-    root.geometry("500x300")
-    root.resizable(0, 0)
-
-    create_ui()
-
-    root.mainloop()
+    SOURCE = input("transfer files from: (phone/computer): ").strip().lower()
+    transfersaves(SOURCE)
