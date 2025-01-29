@@ -44,17 +44,18 @@ def download_adb():
         url = "https://dl.google.com/android/repository/platform-tools-latest-linux.zip"
         adb_exe = "adb"
 
-    path_adb_exe = Path("platform-tools") / adb_exe
-
     # download platform-tools
     print("downloading platform-tools from " + url)
     path_platform_tools = path_dist / 'platform-tools.zip'
     urlretrieve(url, str(path_platform_tools))
     print("platform-tools downloaded")
 
-    # extract zip file
+    # extract adb executable from zip file
     with ZipFile(str(path_platform_tools), 'r') as platformtools:
-        platformtools.extract(str(path_adb_exe), path=path_dist)
+        for file in platformtools.namelist():
+            if file.endswith(adb_exe):
+                platformtools.extract(file, path=path_dist)
+                break
 
     # rename platform-tools folder to adb
     shutil.move(path_dist / 'platform-tools', path_dist / 'adb')
