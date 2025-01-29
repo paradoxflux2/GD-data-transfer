@@ -100,7 +100,6 @@ def open_settings():
 
     def refresh_revert_button_state():
         """disable revert transfer button if backups are disabled or no transfers have been made"""
-        # this somehow fixed itself so thats cool
         if backups_setting.get() and gddt.config_data['last_transfer'] != "None":
             revert_transfer_button.config(state=tk.NORMAL)
         else:

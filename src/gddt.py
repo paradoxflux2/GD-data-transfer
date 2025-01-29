@@ -75,7 +75,6 @@ def write_config(section, option, value):
 
 def set_dir(directory, new_path):
     """set new directory and write it to config"""
-    #global config_data
     if directory == "android_dir":
         config_data['android_dir'] = new_path
     elif directory == "pc_dir":
@@ -85,7 +84,6 @@ def set_dir(directory, new_path):
 
 def set_backups_setting(new_value):
     """change backups setting to a boolean value"""
-    #global config_data
     config_data['save_backups'] = new_value
 
     # convert to string and lowercase so that configparser takes it as a boolean
@@ -94,7 +92,6 @@ def set_backups_setting(new_value):
     write_config('Files', 'save_backups', str(new_value).lower())
 
 def set_last_transfer(new_last_transfer):
-    #global config_data
     config_data['last_transfer'] = new_last_transfer
 
     write_config('Files', 'last_transfer', new_last_transfer)
@@ -140,6 +137,7 @@ def revert_last_transfer():
     android_dir = config_data['android_dir']
     filelist = config_data['filelist']
     last_transfer = config_data['last_transfer']
+
     for savefile in filelist:
         backups_dir = path_current_directory / 'backups'
         backups_dir_path = backups_dir / savefile
