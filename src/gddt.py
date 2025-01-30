@@ -15,13 +15,11 @@ import shutil
 
 config = ConfigParser(interpolation=None)
 
-exitstatus = ""
-
 # get application path (thank you random person from stackoverflow
 # that wrote this like 5 years ago)
 if getattr(sys, 'frozen', False):
     # If the application is run as a bundle, the PyInstaller bootloader
-    # extends the sys module by a flag frozen=True and sets the app 
+    # extends the sys module by a flag frozen=True and sets the app
     # path into variable executable'.
     path_current_directory = Path(sys.executable).parent
     IS_BUNDLE = True
@@ -31,10 +29,10 @@ else:
 
 # === config ===
 
+path_config_file = path_current_directory / "settings.ini"
+
 def read_config():
     """take things from config"""
-    path_config_file = path_current_directory / "settings.ini"
-
     # check if config file exists
     if not path_config_file.is_file():
         print(f"settings.ini not found at {path_config_file}")
@@ -57,45 +55,36 @@ def read_config():
     last_transfer = config.get('Files', 'last_transfer')
 
     configdata = {
-        'path_config_file': path_config_file,
         'android_dir': android_dir,
         'pc_dir': pc_dir,
         'filelist': filelist,
         'save_backups': save_backups,
         'last_transfer': last_transfer
     }
-    return configdata, path_config_file
+    return configdata
 
-config_data, path_config_file = read_config()
+config_data = read_config()
 
 def write_config(section, option, value):
-    """write to config"""
+    """writes to config and sets value in configdata"""
     config.set(section, option, value)
+    config_data[option] = value
+
     with open(path_config_file, 'w', encoding="utf-8") as configfile:
         config.write(configfile)
 
 def set_dir(directory, new_path):
-    """set new directory and write it to config"""
-    if directory == "android_dir":
-        config_data['android_dir'] = new_path
-    elif directory == "pc_dir":
-        config_data['pc_dir'] = new_path
-
+    """sets new directory and writes it to config"""
     write_config('Directories', directory, new_path)
 
 def set_backups_setting(new_value):
-    """change backups setting to a boolean value"""
-    config_data['save_backups'] = new_value
-
-    # convert to string and lowercase so that configparser takes it as a boolean
-    # (i actually think its case-insensitive but at this point it's so ingrained into the code
-    # that its easier to just leave it like that)
-    write_config('Files', 'save_backups', str(new_value).lower())
+    """changes backups setting to a boolean value"""
+    write_config('Files', 'save_backups', str(new_value))
 
 def set_last_transfer(new_last_transfer):
-    config_data['last_transfer'] = new_last_transfer
-
     write_config('Files', 'last_transfer', new_last_transfer)
+
+# === transferring data ===
 
 # get adb path
 path_adb = path_current_directory / 'adb' / 'adb'
@@ -114,25 +103,27 @@ def backup_file(source, savefile):
     if save_backups:
         # create backups directory
         backups_dir = path_current_directory / 'backups'
-        backups_dir_path = backups_dir / savefile
+        backups_savefile_path = backups_dir / savefile
         if not os.path.exists(backups_dir):
             os.makedirs(backups_dir)
 
         # if it's phone to pc, we copy savefile from pc_dir
         if source == "phone":
-            new_pc_dir = Path(pc_dir)
-            savefile_path = new_pc_dir / savefile
+            savefile_path = Path(pc_dir) / savefile
             if savefile_path.is_file():
-                shutil.copy(f"{pc_dir}{savefile}", backups_dir_path)
+                shutil.copy(f"{pc_dir}{savefile}", backups_savefile_path)
 
         # if its pc to phone, we pull savefile from android_dir
         elif source == "computer":
-            cmd = [str(path_adb), "pull", f"{android_dir}{savefile}", str(backups_dir_path)]
+            cmd = [str(path_adb), "pull", f"{android_dir}{savefile}", str(backups_savefile_path)]
             subprocess.run(cmd, capture_output=True, text=True, check=False)
 
-        print(f"saved backup at {backups_dir_path}")
+        print(f"saved backup at {backups_savefile_path}")
 
 def revert_last_transfer():
+    """reverts last transfer by copying whats inside /backups into
+    save folder"""
+
     pc_dir = config_data['pc_dir']
     android_dir = config_data['android_dir']
     filelist = config_data['filelist']
@@ -140,16 +131,16 @@ def revert_last_transfer():
 
     for savefile in filelist:
         backups_dir = path_current_directory / 'backups'
-        backups_dir_path = backups_dir / savefile
+        backups_savefile_path = backups_dir / savefile
 
         if last_transfer == "phonetopc":
-            new_pc_dir = Path(pc_dir)
-            savefile_path = new_pc_dir / savefile
+            savefile_path = Path(pc_dir) / savefile
             if savefile_path.is_file():
-                shutil.copy(f"{pc_dir}{savefile}", backups_dir_path)
+                shutil.copy(f"{pc_dir}{savefile}", backups_savefile_path)
+                print(f"copied {pc_dir}{savefile} to {backups_savefile_path}")
 
         elif last_transfer == "pctophone":
-            cmd = [str(path_adb), "push", backups_dir_path, f"{android_dir}{savefile}"]
+            cmd = [str(path_adb), "push", backups_savefile_path, f"{android_dir}{savefile}"]
             subprocess.run(cmd, capture_output=True, text=True, check=False)
         else:
             print("stupid")
@@ -159,7 +150,7 @@ def transfersaves(source):
     pc_dir = config_data['pc_dir']
     android_dir = config_data['android_dir']
     filelist = config_data['filelist']
-    global exitstatus
+
     for savefile in filelist:
         print(f"backing up {savefile}")
         backup_file(source, savefile)
@@ -176,15 +167,16 @@ def transfersaves(source):
             break
 
         result = subprocess.run(command, capture_output=True, text=True, check=False)
-        exitstatus = result.returncode
-        if exitstatus == 0:
+
+        if result.returncode == 0:
             print(f"{savefile} succesfully transferred")
         else:
-            print(f"couldnt transfer {savefile}. return code: {exitstatus}")
+            print(f"couldnt transfer {savefile}. return code: {result.returncode}")
             print(result.stderr)
             set_last_transfer("None")
             print("all other files have been skipped")
             break
+
     return result
 
 # print everything

@@ -78,12 +78,15 @@ def transfer_button_click():
         change_msg("you didnt select anything")
     else:
         result = gddt.transfersaves(source)
-        if gddt.exitstatus == 0:
+
+        if result.returncode == 0:
             change_msg("save files transferred succesfully!")
         else:
             error_msg = result.stderr.strip()
+
+            # replace some error messages
             if "no devices/emulators found" in error_msg:
-                error_msg = "is your device connected?"
+                error_msg = "no devices found, is your device connected?"
 
             change_msg(f"couldnt transfer save files\n{error_msg}")
 
@@ -190,8 +193,8 @@ def revert_last_transfer():
     if response is True:
         gddt.revert_last_transfer()
         change_msg("last transfer reverted")
-    if response is False:
-        change_msg("action cancelled")
+    else:
+        change_msg("revert cancelled")
 
 
 if __name__ == "__main__":
