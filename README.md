@@ -12,6 +12,7 @@ A tool to transfer your Geometry Dash save files, without saving to RobTop's ser
 
 The next time you plug your device into a computer, you'll receive a prompt asking if you want to authorize USB debugging for that computer. Tap OK to confirm
 
-**Currently, the program assumes that the ADB executable is inside a subfolder which is called "adb".**
-In other words, you will need to download ADB separately, rename the ADB folder to "adb", then put that folder inside the same folder as transfersave.py.
+# Download
+
+You can download it [here](https://github.com/paradoxflux2/GD-data-transfer/releases)
 
