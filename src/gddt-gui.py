@@ -84,7 +84,7 @@ def transfer_button_click():
             error_msg = result.stderr.strip()
             if "no devices/emulators found" in error_msg:
                 error_msg = "is your device connected?"
-        
+
             change_msg(f"couldnt transfer save files\n{error_msg}")
 
 

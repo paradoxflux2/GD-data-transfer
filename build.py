@@ -32,17 +32,17 @@ def copy_config():
         sys.exit(1)
     else:
         shutil.copy(path_config, path_dist / 'settings.ini')
-    
+
     print("copied config to" + str(path_dist / 'settings.ini'))
 
 def download_adb():
     if os.name == "nt":
         url = "https://dl.google.com/android/repository/platform-tools-latest-windows.zip"
-        adb_exe = "adb.exe"
+        adb_files = ["adb.exe", "AdbWinUsbApi.dll", "AdbWinApi.dll"]
     else:
         # im sorry macos
         url = "https://dl.google.com/android/repository/platform-tools-latest-linux.zip"
-        adb_exe = "adb"
+        adb_files = ["adb"]
 
     # download platform-tools
     print("downloading platform-tools from " + url)
@@ -50,12 +50,17 @@ def download_adb():
     urlretrieve(url, str(path_platform_tools))
     print("platform-tools downloaded")
 
-    # extract adb executable from zip file
-    with ZipFile(str(path_platform_tools), 'r') as platformtools:
-        for file in platformtools.namelist():
-            if file.endswith(adb_exe):
-                platformtools.extract(file, path=path_dist)
-                break
+    # extract necessary adb files
+    # (couldnt figure out a better way to do this im sorry)
+    def extract(file_name):
+        with ZipFile(str(path_platform_tools), 'r') as platformtools:
+            for file in platformtools.namelist():
+                if file.endswith(file_name):
+                    platformtools.extract(file, path=path_dist)
+                    break
+
+    for file in adb_files:
+        extract(file)
 
     # rename platform-tools folder to adb
     shutil.move(path_dist / 'platform-tools', path_dist / 'adb')
