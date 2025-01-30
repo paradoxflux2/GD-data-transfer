@@ -11,6 +11,7 @@ import subprocess
 import sys
 from configparser import ConfigParser
 from pathlib import Path
+import shutil
 
 config = ConfigParser(interpolation=None)
 
@@ -109,6 +110,7 @@ def backup_file(source, savefile):
     pc_dir = config_data['pc_dir']
     android_dir = config_data['android_dir']
     save_backups = config_data['save_backups']
+
     if save_backups:
         # create backups directory
         backups_dir = path_current_directory / 'backups'
@@ -116,20 +118,18 @@ def backup_file(source, savefile):
         if not os.path.exists(backups_dir):
             os.makedirs(backups_dir)
 
+        # if it's phone to pc, we copy savefile from pc_dir
         if source == "phone":
             new_pc_dir = Path(pc_dir)
             savefile_path = new_pc_dir / savefile
             if savefile_path.is_file():
-                # adapt copy command to each os
-                if os.name == "nt":
-                    cmd = ['copy', f"{pc_dir}{savefile}", backups_dir_path]
-                else:
-                    cmd = ['cp', f"{pc_dir}{savefile}", backups_dir_path]
-                result = subprocess.call(cmd)
-                print(result)
+                shutil.copy(f"{pc_dir}{savefile}", backups_dir_path)
+
+        # if its pc to phone, we pull savefile from android_dir
         elif source == "computer":
-            cmd = [str(path_adb), "pull", f"{android_dir}{savefile}", backups_dir_path]
+            cmd = [str(path_adb), "pull", f"{android_dir}{savefile}", str(backups_dir_path)]
             subprocess.run(cmd, capture_output=True, text=True, check=False)
+
         print(f"saved backup at {backups_dir_path}")
 
 def revert_last_transfer():
@@ -146,14 +146,8 @@ def revert_last_transfer():
             new_pc_dir = Path(pc_dir)
             savefile_path = new_pc_dir / savefile
             if savefile_path.is_file():
-                # adapt copy command to each os
-                if os.name == "nt":
-                    cmd = ['copy', backups_dir_path, f"{pc_dir}{savefile}"]
-                else:
-                    cmd = ['cp', backups_dir_path, f"{pc_dir}{savefile}"]
+                shutil.copy(f"{pc_dir}{savefile}", backups_dir_path)
 
-                result = subprocess.call(cmd)
-                print(result)
         elif last_transfer == "pctophone":
             cmd = [str(path_adb), "push", backups_dir_path, f"{android_dir}{savefile}"]
             subprocess.run(cmd, capture_output=True, text=True, check=False)
@@ -167,11 +161,14 @@ def transfersaves(source):
     filelist = config_data['filelist']
     global exitstatus
     for savefile in filelist:
+        print(f"backing up {savefile}")
         backup_file(source, savefile)
         if source == "phone": # phone to computer
+            print(f"moving {savefile} to computer")
             command = [str(path_adb), "pull", f"{android_dir}{savefile}", str(pc_dir)]
             set_last_transfer("phonetopc")
         elif source == "computer": # computer to phone
+            print(f"moving {savefile} to phone")
             command = [str(path_adb), "push", f"{pc_dir}{savefile}", android_dir]
             set_last_transfer("pctophone")
         else:
