@@ -12,14 +12,15 @@ import gddt
 
 root = tk.Tk()
 
-source = None
-label = None
+SOURCE = None
+DEST = None
+LABEL = None
 
 # === main window ===
 
 def create_ui():
     """create the ui for the main window"""
-    global label
+    global LABEL
 
     # create a menubar
     menubar = tk.Menu(root)
@@ -39,8 +40,8 @@ def create_ui():
     title.pack(padx=20, pady=20)
 
     # message
-    label = tk.Label(root, text="please select a destination first", font=('Arial', 12))
-    label.pack(side=tk.BOTTOM, padx=20, pady=20)
+    LABEL = tk.Label(root, text="please select a destination first", font=('Arial', 12))
+    LABEL.pack(side=tk.BOTTOM, padx=20, pady=20)
 
     # transfer button
     transfer_button = tk.Button(root, text='Transfer', command=transfer_button_click)
@@ -54,30 +55,30 @@ def create_ui():
     pc_button = tk.Button(root, text='Computer to phone', command=pc_button_click)
     pc_button.pack(pady=3)
 
-direction = {"phone": "computer", "computer": "phone"} # if source is phone, destination is computer, etc
-
 # === main window functions ===
 
-def set_source(device):
-    global source
-    if source == device: # extra useless code yay
-        change_msg(f"destination was already {direction[source]}, are you stupid?")
+def set_direction(new_source, new_dest):
+    global SOURCE
+    global DEST
+    if SOURCE == new_source:
+        change_msg(f"destination was already {new_dest}, are you stupid?")
     else:
-        source = device
-        change_msg(f"changed destination to {direction[source]}")
+        SOURCE = new_source
+        DEST = new_dest
+        change_msg(f"changed destination to {new_dest}")
 
 def phone_button_click():
-    set_source("phone")
+    set_direction("phone", "computer")
 
 def pc_button_click():
-    set_source("computer")
+    set_direction("computer", "phone")
 
 def transfer_button_click():
     """transfer button click"""
-    if source is None:
+    if SOURCE is None:
         change_msg("you didnt select anything")
     else:
-        result = gddt.transfersaves(source)
+        result = gddt.transfersaves(SOURCE, DEST)
 
         if result.returncode == 0:
             change_msg("save files transferred succesfully!")
@@ -90,11 +91,10 @@ def transfer_button_click():
 
             change_msg(f"couldnt transfer save files\n{error_msg}")
 
-
 def change_msg(new_message):
     """change message in window and print same message"""
     print(new_message)
-    label.config(text = new_message)
+    LABEL.config(text=new_message)
 
 # === settings ===
 
@@ -103,19 +103,19 @@ def open_settings():
 
     def refresh_revert_button_state():
         """disable revert transfer button if backups are disabled or no transfers have been made"""
-        if backups_setting.get() and gddt.config_data['last_transfer'] != "None":
+        if backups_setting.get() and gddt.config_manager.last_transfer != "None":
             revert_transfer_button.config(state=tk.NORMAL)
         else:
             revert_transfer_button.config(state=tk.DISABLED)
 
     def save_settings():
         # save directories
-        gddt.set_dir('android_dir', android_dir_entry.get())
-        gddt.set_dir('pc_dir', pc_dir_entry.get())
+        gddt.config_manager.set_dir('android_dir', android_dir_entry.get())
+        gddt.config_manager.set_dir('pc_dir', pc_dir_entry.get())
 
         # save backups setting
         backups_setting_value = backups_setting.get()
-        gddt.set_backups_setting(backups_setting_value)
+        gddt.config_manager.set_backups_setting(backups_setting_value)
 
         refresh_revert_button_state()
 
@@ -134,7 +134,7 @@ def open_settings():
     # android dir entry
     android_dir_entry = tk.Entry(settings_window)
     android_dir_entry.grid(row=1, column=1, padx=10, pady=10)
-    android_dir_entry.insert(0, gddt.config_data['android_dir'])
+    android_dir_entry.insert(0, gddt.config_manager.android_dir)
 
     # pc dir label
     pc_dir_label = tk.Label(settings_window, text="Computer Directory")
@@ -142,10 +142,10 @@ def open_settings():
     # pc dir entry
     pc_dir_entry = tk.Entry(settings_window)
     pc_dir_entry.grid(row=2, column=1, padx=10, pady=10)
-    pc_dir_entry.insert(0, gddt.config_data['pc_dir'])
+    pc_dir_entry.insert(0, gddt.config_manager.pc_dir)
 
     # toggle backups
-    backups_setting = tk.BooleanVar(value=gddt.config_data['save_backups'])
+    backups_setting = tk.BooleanVar(value=gddt.config_manager.save_backups)
     backups_checkbox = tk.Checkbutton(settings_window, text='Make backups',variable=backups_setting, onvalue=True, offvalue=False)
     backups_checkbox.grid(row=4, column=0, padx=10, pady=10)
 
@@ -181,7 +181,7 @@ def start_adb_server():
 
 def revert_last_transfer():
     # assign previous destination so it can be used in the messagebox
-    if gddt.config_data['last_transfer'] == "phonetopc":
+    if gddt.config_manager.last_transfer == "phonetopc":
         prev_dest = "computer"
     else:
         prev_dest = "phone"
