@@ -10,91 +10,103 @@ from tkinter import messagebox
 import subprocess
 import gddt
 
-root = tk.Tk()
-
-SOURCE = None
-DEST = None
-LABEL = None
-
 # === main window ===
 
-def create_ui():
-    """create the ui for the main window"""
-    global LABEL
+class MainWindow:
+    def __init__(self):
+        self.root = tk.Tk()
 
-    # create a menubar
-    menubar = tk.Menu(root)
-    root.config(menu=menubar)
+        self.source = None
+        self.dest = None
+        self.label = None
 
-    help_menu = tk.Menu(menubar, tearoff=False)
+        self.title = None
+        self.menubar = None
+        self.help_menu = None
+        self.transfer_button = None
+        self.phone_button = None
+        self.pc_button = None
+        self.result = None
+        self.error_msg = None
 
-    # Help menu buttons
-    help_menu.add_command(label='Settings', command=open_settings)
-    help_menu.add_command(label='Exit', command=root.destroy)
+    def create_ui(self):
+        """create the ui for the main window"""
 
-    # add the Help menu to the menubar
-    menubar.add_cascade(label="Help", menu=help_menu)
+        self.title = tk.Label(self.root, text="GD Data Transfer", font=('Arial', 18))
 
-    # title
-    title = tk.Label(root, text="GD Data Transfer", font=('Arial', 18))
-    title.pack(padx=20, pady=20)
+        # create a menubar
+        self.menubar = tk.Menu(self.root)
+        self.root.config(menu=self.menubar)
 
-    # message
-    LABEL = tk.Label(root, text="please select a destination first", font=('Arial', 12))
-    LABEL.pack(side=tk.BOTTOM, padx=20, pady=20)
+        self.help_menu = tk.Menu(self.menubar, tearoff=False)
 
-    # transfer button
-    transfer_button = tk.Button(root, text='Transfer', command=transfer_button_click)
-    transfer_button.pack(side=tk.BOTTOM)
+        # Help menu buttons
+        self.help_menu.add_command(label='Settings', command=open_settings)
+        self.help_menu.add_command(label='Exit', command=self.root.destroy)
 
-    # phone to computer button
-    phone_button = tk.Button(root, text='Phone to computer', command=phone_button_click)
-    phone_button.pack(pady=3)
+        # add the Help menu to the menubar
+        self.menubar.add_cascade(label="Help", menu=self.help_menu)
 
-    # computer to phone button
-    pc_button = tk.Button(root, text='Computer to phone', command=pc_button_click)
-    pc_button.pack(pady=3)
+        # title
+        self.title.pack(padx=20, pady=20)
 
-# === main window functions ===
+        # message
+        self.label = tk.Label(self.root, text="please select a destination first", font=('Arial', 12))
+        self.label.pack(side=tk.BOTTOM, padx=20, pady=20)
 
-def set_direction(new_source, new_dest):
-    global SOURCE
-    global DEST
-    if SOURCE == new_source:
-        change_msg(f"destination was already {new_dest}, are you stupid?")
-    else:
-        SOURCE = new_source
-        DEST = new_dest
-        change_msg(f"changed destination to {new_dest}")
+        # transfer button
+        self.transfer_button = tk.Button(self.root, text='Transfer', command=self.transfer_button_click)
+        self.transfer_button.pack(side=tk.BOTTOM)
 
-def phone_button_click():
-    set_direction("phone", "computer")
+        # phone to computer button
+        self.phone_button = tk.Button(self.root, text='Phone to computer', command=self.phone_button_click)
+        self.phone_button.pack(pady=3)
 
-def pc_button_click():
-    set_direction("computer", "phone")
+        # computer to phone button
+        self.pc_button = tk.Button(self.root, text='Computer to phone', command=self.pc_button_click)
+        self.pc_button.pack(pady=3)
 
-def transfer_button_click():
-    """transfer button click"""
-    if SOURCE is None:
-        change_msg("you didnt select anything")
-    else:
-        result = gddt.transfersaves(SOURCE, DEST)
+    # === main window functions ===
 
-        if result.returncode == 0:
-            change_msg("save files transferred succesfully!")
+    def set_direction(self, new_source, new_dest):
+
+        if self.source == new_source:
+            self.change_msg(f"destination was already {new_dest}, are you stupid?")
         else:
-            error_msg = result.stderr.strip()
+            self.source = new_source
+            self.dest = new_dest
+            self.change_msg(f"changed destination to {new_dest}")
 
-            # replace some error messages
-            if "no devices/emulators found" in error_msg:
-                error_msg = "no devices found, is your device connected?"
+    def phone_button_click(self):
+        self.set_direction("phone", "computer")
 
-            change_msg(f"couldnt transfer save files\n{error_msg}")
+    def pc_button_click(self):
+        self.set_direction("computer", "phone")
 
-def change_msg(new_message):
-    """change message in window and print same message"""
-    print(new_message)
-    LABEL.config(text=new_message)
+    def transfer_button_click(self):
+        """transfer button click"""
+        if self.source is None:
+            self.change_msg("you didnt select anything")
+        else:
+            self.result = gddt.transfersaves(self.source, self.dest)
+
+            if self.result.returncode == 0:
+                self.change_msg("save files transferred succesfully!")
+            else:
+                self.error_msg = self.result.stderr.strip()
+
+                # replace some error messages
+                if "no devices/emulators found" in self.error_msg:
+                    self.error_msg = "no devices found, is your device connected?"
+
+                self.change_msg(f"couldnt transfer save files\n{self.error_msg}")
+
+    def change_msg(self, new_message):
+        """change message in window and print same message"""
+        print(new_message)
+        self.label.config(text=new_message)
+
+main_window = MainWindow()
 
 # === settings ===
 
@@ -119,7 +131,7 @@ def open_settings():
 
         refresh_revert_button_state()
 
-        change_msg("saved settings!")
+        main_window.change_msg("saved settings!")
 
     settings_window = tk.Toplevel()
     settings_window.title("Settings")
@@ -172,12 +184,12 @@ def open_settings():
 def kill_adb_server():
     kill_server_command = [str(gddt.path_adb), "kill-server"]
     subprocess.run(kill_server_command, capture_output=True, text=True, check=False)
-    change_msg("adb server is kil")
+    main_window.change_msg("adb server is kil")
 
 def start_adb_server():
     start_server_command = [str(gddt.path_adb), "start-server"]
     subprocess.run(start_server_command, capture_output=True, text=True, check=False)
-    change_msg("adb server started")
+    main_window.change_msg("adb server started")
 
 def revert_last_transfer():
     # assign previous destination so it can be used in the messagebox
@@ -192,16 +204,16 @@ def revert_last_transfer():
             f" backups made by GDDT. \n\nAre you sure you want to continue?")
     if response is True:
         gddt.revert_last_transfer()
-        change_msg("last transfer reverted")
+        main_window.change_msg("last transfer reverted")
     else:
-        change_msg("revert cancelled")
+        main_window.change_msg("revert cancelled")
 
 
 if __name__ == "__main__":
-    root.title("GD Data Transfer")
-    root.geometry("500x300")
-    root.resizable(0, 0)
+    main_window.root.title("GD Data Transfer")
+    main_window.root.geometry("500x300")
+    main_window.root.resizable(0, 0)
 
-    create_ui()
+    main_window.create_ui()
 
-    root.mainloop()
+    main_window.root.mainloop()
