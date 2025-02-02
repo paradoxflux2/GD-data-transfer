@@ -41,7 +41,7 @@ class MainWindow:
         self.help_menu = tk.Menu(self.menubar, tearoff=False)
 
         # Help menu buttons
-        self.help_menu.add_command(label='Settings', command=open_settings)
+        self.help_menu.add_command(label='Settings', command=settings_window.open_settings)
         self.help_menu.add_command(label='Exit', command=self.root.destroy)
 
         # add the Help menu to the menubar
@@ -110,104 +110,126 @@ main_window = MainWindow()
 
 # === settings ===
 
-def open_settings():
-    """open settings window"""
+class SettingsWindow:
+    def __init__(self):
+        self.settings_window = None
+        self.configlabel = None
+        self.android_dir_label = None
+        self.android_dir_entry = None
+        self.pc_dir_label = None
+        self.pc_dir_entry = None
+        self.backups_setting = None
+        self.backups_checkbox = None
+        self.revert_transfer_button = None
+        self.revert_transfer_button = None
+        self.kill_button = None
+        self.start_button = None
+        self.save_button = None
 
-    def refresh_revert_button_state():
+        self.backups_setting_value = None
+        self.kill_server_command = None
+        self.start_server_command = None
+        self.prev_dest = None
+        self.response = None
+
+    def open_settings(self):
+        """open settings window"""
+
+        self.settings_window = tk.Toplevel()
+        self.settings_window.title("Settings")
+        self.settings_window.resizable(0, 0)
+
+        self.configlabel = tk.Label(self.settings_window, text="Settings", font=('Arial', 12))
+        self.configlabel.grid(row=0, column=0, columnspan=2, pady=10, sticky=tk.EW)
+
+        # android dir label
+        self.android_dir_label = tk.Label(self.settings_window, text="Android Directory")
+        self.android_dir_label.grid(row=1, column=0, padx=10, pady=10)
+        # android dir entry
+        self.android_dir_entry = tk.Entry(self.settings_window)
+        self.android_dir_entry.grid(row=1, column=1, padx=10, pady=10)
+        self.android_dir_entry.insert(0, gddt.config_manager.android_dir)
+
+        # pc dir label
+        self.pc_dir_label = tk.Label(self.settings_window, text="Computer Directory")
+        self.pc_dir_label.grid(row=2, column=0, padx=10, pady=10)
+        # pc dir entry
+        self.pc_dir_entry = tk.Entry(self.settings_window)
+        self.pc_dir_entry.grid(row=2, column=1, padx=10, pady=10)
+        self.pc_dir_entry.insert(0, gddt.config_manager.pc_dir)
+
+        # toggle backups
+        self.backups_setting = tk.BooleanVar(value=gddt.config_manager.save_backups)
+        self.backups_checkbox = tk.Checkbutton(self.settings_window, text='Make backups',variable=self.backups_setting, onvalue=True, offvalue=False)
+        self.backups_checkbox.grid(row=4, column=0, padx=10, pady=10)
+
+        # revert transfer button
+        self.revert_transfer_button = tk.Button(self.settings_window, text='Revert Last Transfer', command=self.revert_last_transfer)
+        self.revert_transfer_button.grid(row=4, column=1, padx=10, pady=10)
+
+        self.refresh_revert_button_state()
+
+        # kill adb server button
+        self.kill_button = tk.Button(self.settings_window, text='Kill ADB Server', command=self.kill_adb_server)
+        self.kill_button.grid(row=5, column=1, padx=10, pady=10)
+
+        # start adb server button
+        self.start_button = tk.Button(self.settings_window, text='Start ADB Server', command=self.start_adb_server)
+        self.start_button.grid(row=5, column=0, padx=10, pady=10)
+
+        # save settings button
+        self.save_button = tk.Button(self.settings_window, text='Save Settings', command=self.save_settings)
+        self.save_button.grid(row=6, column=1, padx=10, pady=10)
+
+    # === settings functions ===
+
+    def refresh_revert_button_state(self):
         """disable revert transfer button if backups are disabled or no transfers have been made"""
-        if backups_setting.get() and gddt.config_manager.last_transfer != "None":
-            revert_transfer_button.config(state=tk.NORMAL)
+        if self.backups_setting.get() and gddt.config_manager.last_transfer != "None":
+            self.revert_transfer_button.config(state=tk.NORMAL)
         else:
-            revert_transfer_button.config(state=tk.DISABLED)
+            self.revert_transfer_button.config(state=tk.DISABLED)
 
-    def save_settings():
+    def save_settings(self):
         # save directories
-        gddt.config_manager.set_dir('android_dir', android_dir_entry.get())
-        gddt.config_manager.set_dir('pc_dir', pc_dir_entry.get())
+        gddt.config_manager.set_dir('android_dir', self.android_dir_entry.get())
+        gddt.config_manager.set_dir('pc_dir', self.pc_dir_entry.get())
 
         # save backups setting
-        backups_setting_value = backups_setting.get()
-        gddt.config_manager.set_backups_setting(backups_setting_value)
+        self.backups_setting_value = self.backups_setting.get()
+        gddt.config_manager.set_backups_setting(self.backups_setting_value)
 
-        refresh_revert_button_state()
+        self.refresh_revert_button_state()
 
         main_window.change_msg("saved settings!")
 
-    settings_window = tk.Toplevel()
-    settings_window.title("Settings")
-    settings_window.resizable(0, 0)
+    def kill_adb_server(self):
+        self.kill_server_command = [str(gddt.path_adb), "kill-server"]
+        subprocess.run(self.kill_server_command, capture_output=True, text=True, check=False)
+        main_window.change_msg("adb server is kil")
 
-    configlabel = tk.Label(settings_window, text="Settings", font=('Arial', 12))
-    configlabel.grid(row=0, column=0, columnspan=2, pady=10, sticky=tk.EW)
+    def start_adb_server(self):
+        self.start_server_command = [str(gddt.path_adb), "start-server"]
+        subprocess.run(self.start_server_command, capture_output=True, text=True, check=False)
+        main_window.change_msg("adb server started")
 
-    # android dir label
-    android_dir_label = tk.Label(settings_window, text="Android Directory")
-    android_dir_label.grid(row=1, column=0, padx=10, pady=10)
-    # android dir entry
-    android_dir_entry = tk.Entry(settings_window)
-    android_dir_entry.grid(row=1, column=1, padx=10, pady=10)
-    android_dir_entry.insert(0, gddt.config_manager.android_dir)
+    def revert_last_transfer(self):
+        # assign previous destination so it can be used in the messagebox
+        if gddt.config_manager.last_transfer == "phonetopc":
+            self.prev_dest = "computer"
+        else:
+            self.prev_dest = "phone"
 
-    # pc dir label
-    pc_dir_label = tk.Label(settings_window, text="Computer Directory")
-    pc_dir_label.grid(row=2, column=0, padx=10, pady=10)
-    # pc dir entry
-    pc_dir_entry = tk.Entry(settings_window)
-    pc_dir_entry.grid(row=2, column=1, padx=10, pady=10)
-    pc_dir_entry.insert(0, gddt.config_manager.pc_dir)
-
-    # toggle backups
-    backups_setting = tk.BooleanVar(value=gddt.config_manager.save_backups)
-    backups_checkbox = tk.Checkbutton(settings_window, text='Make backups',variable=backups_setting, onvalue=True, offvalue=False)
-    backups_checkbox.grid(row=4, column=0, padx=10, pady=10)
-
-    # revert transfer button
-    revert_transfer_button = tk.Button(settings_window, text='Revert Last Transfer', command=revert_last_transfer)
-    revert_transfer_button.grid(row=4, column=1, padx=10, pady=10)
-
-    refresh_revert_button_state()
-
-    # kill adb server button
-    kill_button = tk.Button(settings_window, text='Kill ADB Server', command=kill_adb_server)
-    kill_button.grid(row=5, column=1, padx=10, pady=10)
-
-    # start adb server button
-    start_button = tk.Button(settings_window, text='Start ADB Server', command=start_adb_server)
-    start_button.grid(row=5, column=0, padx=10, pady=10)
-
-    # save settings button
-    save_button = tk.Button(settings_window, text='Save Settings', command=save_settings)
-    save_button.grid(row=6, column=1, padx=10, pady=10)
-
-# === settings functions ===
-
-def kill_adb_server():
-    kill_server_command = [str(gddt.path_adb), "kill-server"]
-    subprocess.run(kill_server_command, capture_output=True, text=True, check=False)
-    main_window.change_msg("adb server is kil")
-
-def start_adb_server():
-    start_server_command = [str(gddt.path_adb), "start-server"]
-    subprocess.run(start_server_command, capture_output=True, text=True, check=False)
-    main_window.change_msg("adb server started")
-
-def revert_last_transfer():
-    # assign previous destination so it can be used in the messagebox
-    if gddt.config_manager.last_transfer == "phonetopc":
-        prev_dest = "computer"
-    else:
-        prev_dest = "phone"
-
-    response = messagebox.askyesno("Confirm action",
-    "Doing this will revert the last transfer you have made, potentially" \
-        f" making you lose progress if the save files in your {prev_dest} are newer than the" \
-            f" backups made by GDDT. \n\nAre you sure you want to continue?")
-    if response is True:
-        gddt.revert_last_transfer()
-        main_window.change_msg("last transfer reverted")
-    else:
-        main_window.change_msg("revert cancelled")
-
+        self.response = messagebox.askyesno("Confirm action",
+        "Doing this will revert the last transfer you have made, potentially" \
+            f" making you lose progress if the save files in your {self.prev_dest} are newer than the" \
+                f" backups made by GDDT. \n\nAre you sure you want to continue?")
+        if self.response is True:
+            gddt.revert_last_transfer()
+            main_window.change_msg("last transfer reverted")
+        else:
+            main_window.change_msg("revert cancelled")
+settings_window = SettingsWindow()
 
 if __name__ == "__main__":
     main_window.root.title("GD Data Transfer")
