@@ -33,11 +33,11 @@ class ConfigManager:
     """manages config"""
     def __init__(self, path):
         self.path_config_file = path / "settings.ini"
-        self.android_dir = ""
-        self.pc_dir = ""
-        self.filelist = []
+        self.android_dir = None
+        self.pc_dir = None
+        self.filelist = None
         self.save_backups = None
-        self.last_transfer = ""
+        self.last_transfer = None
 
     def read_config(self):
         """take things from config"""
@@ -167,33 +167,39 @@ def transfersaves(source, destination):
     android_dir = config_manager.android_dir
     filelist = config_manager.filelist
 
-    for savefile in filelist:
-        print(f"backing up {savefile}")
-        backup_file(source, savefile)
+    # check if pc directory exists
+    if not os.path.exists(pc_dir):
+        config_manager.set_last_transfer("None")
+        return subprocess.CompletedProcess(args=[], returncode=1, stdout="", stderr="pc directory does not exist")
 
-        print(f"moving {savefile} to {destination}")
+    else:
+        for savefile in filelist:
+            print(f"backing up {savefile}")
+            backup_file(source, savefile)
 
-        if destination == "computer": # phone to computer
-            command = [str(path_adb), "pull", f"{android_dir}{savefile}", str(pc_dir)]
-            config_manager.set_last_transfer("phonetopc")
+            print(f"moving {savefile} to {destination}")
 
-        elif destination == "phone": # computer to phone
-            command = [str(path_adb), "push", f"{pc_dir}{savefile}", android_dir]
-            config_manager.set_last_transfer("pctophone")
-        else:
-            print("invalid source")
-            break
+            if destination == "computer": # phone to computer
+                command = [str(path_adb), "pull", f"{android_dir}{savefile}", str(pc_dir)]
+                config_manager.set_last_transfer("phonetopc")
 
-        result = subprocess.run(command, capture_output=True, text=True, check=False)
+            elif destination == "phone": # computer to phone
+                command = [str(path_adb), "push", f"{pc_dir}{savefile}", android_dir]
+                config_manager.set_last_transfer("pctophone")
+            else:
+                print("invalid source")
+                break
 
-        if result.returncode == 0:
-            print(f"{savefile} succesfully transferred")
-        else:
-            print(f"couldnt transfer {savefile}. return code: {result.returncode}")
-            print(result.stderr)
-            config_manager.set_last_transfer("None")
-            print("all other files have been skipped")
-            break
+            result = subprocess.run(command, capture_output=True, text=True, check=False)
+
+            if result.returncode == 0:
+                print(f"{savefile} succesfully transferred")
+            else:
+                print(f"couldnt transfer {savefile}. return code: {result.returncode}")
+                print(result.stderr)
+                config_manager.set_last_transfer("None")
+                print("all other files have been skipped")
+                break
 
     return result
 

@@ -10,23 +10,25 @@ from tkinter import messagebox
 import subprocess
 import gddt
 
-# === main window ===
-
 class MainWindow:
+    """main window management"""
     def __init__(self):
         self.root = tk.Tk()
+
+        self.root.title("GD Data Transfer")
+        self.root.geometry("500x300")
+        self.root.resizable(0, 0)
 
         self.source = None
         self.dest = None
         self.label = None
-
         self.title = None
         self.menubar = None
         self.help_menu = None
         self.transfer_button = None
         self.phone_button = None
         self.pc_button = None
-        self.result = None
+        self.transfer_result = None
         self.error_msg = None
 
     def create_ui(self):
@@ -41,7 +43,7 @@ class MainWindow:
         self.help_menu = tk.Menu(self.menubar, tearoff=False)
 
         # Help menu buttons
-        self.help_menu.add_command(label='Settings', command=settings_window.open_settings)
+        self.help_menu.add_command(label='Settings', command=settings_window.create_ui)
         self.help_menu.add_command(label='Exit', command=self.root.destroy)
 
         # add the Help menu to the menubar
@@ -69,6 +71,7 @@ class MainWindow:
     # === main window functions ===
 
     def set_direction(self, new_source, new_dest):
+        """sets new source and destination"""
 
         if self.source == new_source:
             self.change_msg(f"destination was already {new_dest}, are you stupid?")
@@ -88,12 +91,12 @@ class MainWindow:
         if self.source is None:
             self.change_msg("you didnt select anything")
         else:
-            self.result = gddt.transfersaves(self.source, self.dest)
+            self.transfer_result = gddt.transfersaves(self.source, self.dest)
 
-            if self.result.returncode == 0:
+            if self.transfer_result.returncode == 0:
                 self.change_msg("save files transferred succesfully!")
             else:
-                self.error_msg = self.result.stderr.strip()
+                self.error_msg = self.transfer_result.stderr.strip()
 
                 # replace some error messages
                 if "no devices/emulators found" in self.error_msg:
@@ -105,8 +108,6 @@ class MainWindow:
         """change message in window and print same message"""
         print(new_message)
         self.label.config(text=new_message)
-
-main_window = MainWindow()
 
 # === settings ===
 
@@ -132,7 +133,7 @@ class SettingsWindow:
         self.prev_dest = None
         self.response = None
 
-    def open_settings(self):
+    def create_ui(self):
         """open settings window"""
 
         self.settings_window = tk.Toplevel()
@@ -229,12 +230,11 @@ class SettingsWindow:
             main_window.change_msg("last transfer reverted")
         else:
             main_window.change_msg("revert cancelled")
+
+main_window = MainWindow()
 settings_window = SettingsWindow()
 
 if __name__ == "__main__":
-    main_window.root.title("GD Data Transfer")
-    main_window.root.geometry("500x300")
-    main_window.root.resizable(0, 0)
 
     main_window.create_ui()
 
