@@ -17,7 +17,7 @@ config = ConfigParser(interpolation=None)
 
 # get application path (thank you random person from stackoverflow
 # that wrote this like 5 years ago)
-if getattr(sys, 'frozen', False):
+if getattr(sys, "frozen", False):
     # If the application is run as a bundle, the PyInstaller bootloader
     # extends the sys module by a flag frozen=True and sets the app
     # path into variable executable'.
@@ -29,8 +29,10 @@ else:
 
 # === config ===
 
+
 class ConfigManager:
     """manages config"""
+
     def __init__(self, path):
         self.path_config_file = path / "settings.ini"
         self.android_dir = None
@@ -49,18 +51,18 @@ class ConfigManager:
         config.read(self.path_config_file)
 
         # directories
-        self.android_dir = config.get('Directories', 'android_dir')
-        self.pc_dir = os.path.expandvars(config.get('Directories', 'pc_dir'))
+        self.android_dir = config.get("Directories", "android_dir")
+        self.pc_dir = os.path.expandvars(config.get("Directories", "pc_dir"))
 
         # files that will be transferred (ik this technically could
         # also be used for things outside gd but who cares lol)
-        self.filelist = config.get('Files', 'file_list').split(',')
+        self.filelist = config.get("Files", "file_list").split(",")
 
         # if backups will be saved
-        self.save_backups = config.getboolean('Files', 'save_backups')
+        self.save_backups = config.getboolean("Files", "save_backups")
 
         # the last transfer done. "None" by default
-        self.last_transfer = config.get('Files', 'last_transfer')
+        self.last_transfer = config.get("Files", "last_transfer")
 
     def write_config(self, section, option, value):
         """writes to config and sets value"""
@@ -77,7 +79,7 @@ class ConfigManager:
         elif option == "last_transfer":
             self.last_transfer = value
 
-        with open(self.path_config_file, 'w', encoding="utf-8") as configfile:
+        with open(self.path_config_file, "w", encoding="utf-8") as configfile:
             config.write(configfile)
 
     def set_dir(self, directory, new_path):
@@ -87,15 +89,16 @@ class ConfigManager:
         elif directory == "pc_dir":
             self.pc_dir = new_path
 
-        self.write_config('Directories', directory, new_path)
+        self.write_config("Directories", directory, new_path)
 
     def set_backups_setting(self, new_value):
         """changes backups setting to a boolean value"""
-        self.write_config('Files', 'save_backups', str(new_value))
+        self.write_config("Files", "save_backups", str(new_value))
 
     def set_last_transfer(self, new_last_transfer):
         """sets new last transfer"""
-        self.write_config('Files', 'last_transfer', new_last_transfer)
+        self.write_config("Files", "last_transfer", new_last_transfer)
+
 
 config_manager = ConfigManager(path_current_directory)
 
@@ -104,20 +107,21 @@ config_manager.read_config()
 # === transferring data ===
 
 # get adb path
-path_adb = path_current_directory / 'adb' / 'adb'
+path_adb = path_current_directory / "adb" / "adb"
 if os.name == "nt":
-    path_adb = path_adb.with_name('adb.exe')
+    path_adb = path_adb.with_name("adb.exe")
 
 if not path_adb.is_file():
     print(f"adb not found at {path_adb}")
     sys.exit(1)
+
 
 def backup_file(source, savefile):
     """backs up a file into backups directory"""
 
     if config_manager.save_backups:
         # create backups directory
-        backups_dir = path_current_directory / 'backups'
+        backups_dir = path_current_directory / "backups"
         backups_savefile_path = backups_dir / savefile
         if not os.path.exists(backups_dir):
             os.makedirs(backups_dir)
@@ -130,10 +134,16 @@ def backup_file(source, savefile):
 
         # if its pc to phone, we pull savefile from android_dir
         elif source == "computer":
-            cmd = [str(path_adb), "pull", f"{config_manager.android_dir}{savefile}", str(backups_savefile_path)]
+            cmd = [
+                str(path_adb),
+                "pull",
+                f"{config_manager.android_dir}{savefile}",
+                str(backups_savefile_path),
+            ]
             subprocess.run(cmd, capture_output=True, text=True, check=False)
 
         print(f"saved backup at {backups_savefile_path}")
+
 
 def revert_last_transfer():
     """reverts last transfer by copying whats inside /backups into
@@ -145,7 +155,7 @@ def revert_last_transfer():
     last_transfer = config_manager.last_transfer
 
     for savefile in filelist:
-        backups_dir = path_current_directory / 'backups'
+        backups_dir = path_current_directory / "backups"
         backups_savefile_path = backups_dir / savefile
 
         if last_transfer == "phonetopc":
@@ -155,11 +165,17 @@ def revert_last_transfer():
                 print(f"copied {pc_dir}{savefile} to {backups_savefile_path}")
 
         elif last_transfer == "pctophone":
-            cmd = [str(path_adb), "push", backups_savefile_path, f"{android_dir}{savefile}"]
+            cmd = [
+                str(path_adb),
+                "push",
+                backups_savefile_path,
+                f"{android_dir}{savefile}",
+            ]
             subprocess.run(cmd, capture_output=True, text=True, check=False)
         else:
             print("stupid")
             break
+
 
 def transfersaves(source, destination):
     """transfers save files between devices"""
@@ -170,38 +186,40 @@ def transfersaves(source, destination):
     # check if pc directory exists
     if not os.path.exists(pc_dir):
         config_manager.set_last_transfer("None")
-        return subprocess.CompletedProcess(args=[], returncode=1, stdout="", stderr="pc directory does not exist")
+        return subprocess.CompletedProcess(
+            args=[], returncode=1, stdout="", stderr="pc directory does not exist"
+        )
 
-    else:
-        for savefile in filelist:
-            print(f"backing up {savefile}")
-            backup_file(source, savefile)
+    for savefile in filelist:
+        print(f"backing up {savefile}")
+        backup_file(source, savefile)
 
-            print(f"moving {savefile} to {destination}")
+        print(f"moving {savefile} to {destination}")
 
-            if destination == "computer": # phone to computer
-                command = [str(path_adb), "pull", f"{android_dir}{savefile}", str(pc_dir)]
-                config_manager.set_last_transfer("phonetopc")
+        if destination == "computer":  # phone to computer
+            command = [str(path_adb), "pull", f"{android_dir}{savefile}", str(pc_dir)]
+            config_manager.set_last_transfer("phonetopc")
 
-            elif destination == "phone": # computer to phone
-                command = [str(path_adb), "push", f"{pc_dir}{savefile}", android_dir]
-                config_manager.set_last_transfer("pctophone")
-            else:
-                print("invalid source")
-                break
+        elif destination == "phone":  # computer to phone
+            command = [str(path_adb), "push", f"{pc_dir}{savefile}", android_dir]
+            config_manager.set_last_transfer("pctophone")
+        else:
+            print("invalid source")
+            break
 
-            result = subprocess.run(command, capture_output=True, text=True, check=False)
+        result = subprocess.run(command, capture_output=True, text=True, check=False)
 
-            if result.returncode == 0:
-                print(f"{savefile} succesfully transferred")
-            else:
-                print(f"couldnt transfer {savefile}. return code: {result.returncode}")
-                print(result.stderr)
-                config_manager.set_last_transfer("None")
-                print("all other files have been skipped")
-                break
+        if result.returncode == 0:
+            print(f"{savefile} succesfully transferred")
+        else:
+            print(f"couldnt transfer {savefile}. return code: {result.returncode}")
+            print(result.stderr)
+            config_manager.set_last_transfer("None")
+            print("all other files have been skipped")
+            break
 
     return result
+
 
 # print everything
 if IS_BUNDLE:

@@ -10,8 +10,10 @@ from tkinter import messagebox
 import subprocess
 import gddt
 
+
 class MainWindow:
     """main window management"""
+
     def __init__(self):
         self.root = tk.Tk()
 
@@ -34,7 +36,7 @@ class MainWindow:
     def create_ui(self):
         """create the ui for the main window"""
 
-        self.title = tk.Label(self.root, text="GD Data Transfer", font=('Arial', 18))
+        self.title = tk.Label(self.root, text="GD Data Transfer", font=("Arial", 18))
 
         # create a menubar
         self.menubar = tk.Menu(self.root)
@@ -43,8 +45,8 @@ class MainWindow:
         self.help_menu = tk.Menu(self.menubar, tearoff=False)
 
         # Help menu buttons
-        self.help_menu.add_command(label='Settings', command=settings_window.create_ui)
-        self.help_menu.add_command(label='Exit', command=self.root.destroy)
+        self.help_menu.add_command(label="Settings", command=settings_window.create_ui)
+        self.help_menu.add_command(label="Exit", command=self.root.destroy)
 
         # add the Help menu to the menubar
         self.menubar.add_cascade(label="Help", menu=self.help_menu)
@@ -53,19 +55,27 @@ class MainWindow:
         self.title.pack(padx=20, pady=20)
 
         # message
-        self.label = tk.Label(self.root, text="please select a destination first", font=('Arial', 12))
+        self.label = tk.Label(
+            self.root, text="please select a destination first", font=("Arial", 12)
+        )
         self.label.pack(side=tk.BOTTOM, padx=20, pady=20)
 
         # transfer button
-        self.transfer_button = tk.Button(self.root, text='Transfer', command=self.transfer_button_click)
+        self.transfer_button = tk.Button(
+            self.root, text="Transfer", command=self.transfer_button_click
+        )
         self.transfer_button.pack(side=tk.BOTTOM)
 
         # phone to computer button
-        self.phone_button = tk.Button(self.root, text='Phone to computer', command=self.phone_button_click)
+        self.phone_button = tk.Button(
+            self.root, text="Phone to computer", command=self.phone_button_click
+        )
         self.phone_button.pack(pady=3)
 
         # computer to phone button
-        self.pc_button = tk.Button(self.root, text='Computer to phone', command=self.pc_button_click)
+        self.pc_button = tk.Button(
+            self.root, text="Computer to phone", command=self.pc_button_click
+        )
         self.pc_button.pack(pady=3)
 
     # === main window functions ===
@@ -109,7 +119,9 @@ class MainWindow:
         print(new_message)
         self.label.config(text=new_message)
 
+
 # === settings ===
+
 
 class SettingsWindow:
     def __init__(self):
@@ -140,11 +152,15 @@ class SettingsWindow:
         self.settings_window.title("Settings")
         self.settings_window.resizable(0, 0)
 
-        self.configlabel = tk.Label(self.settings_window, text="Settings", font=('Arial', 12))
+        self.configlabel = tk.Label(
+            self.settings_window, text="Settings", font=("Arial", 12)
+        )
         self.configlabel.grid(row=0, column=0, columnspan=2, pady=10, sticky=tk.EW)
 
         # android dir label
-        self.android_dir_label = tk.Label(self.settings_window, text="Android Directory")
+        self.android_dir_label = tk.Label(
+            self.settings_window, text="Android Directory"
+        )
         self.android_dir_label.grid(row=1, column=0, padx=10, pady=10)
         # android dir entry
         self.android_dir_entry = tk.Entry(self.settings_window)
@@ -161,25 +177,41 @@ class SettingsWindow:
 
         # toggle backups
         self.backups_setting = tk.BooleanVar(value=gddt.config_manager.save_backups)
-        self.backups_checkbox = tk.Checkbutton(self.settings_window, text='Make backups',variable=self.backups_setting, onvalue=True, offvalue=False)
+        self.backups_checkbox = tk.Checkbutton(
+            self.settings_window,
+            text="Make backups",
+            variable=self.backups_setting,
+            onvalue=True,
+            offvalue=False,
+        )
         self.backups_checkbox.grid(row=4, column=0, padx=10, pady=10)
 
         # revert transfer button
-        self.revert_transfer_button = tk.Button(self.settings_window, text='Revert Last Transfer', command=self.revert_last_transfer)
+        self.revert_transfer_button = tk.Button(
+            self.settings_window,
+            text="Revert Last Transfer",
+            command=self.revert_last_transfer,
+        )
         self.revert_transfer_button.grid(row=4, column=1, padx=10, pady=10)
 
         self.refresh_revert_button_state()
 
         # kill adb server button
-        self.kill_button = tk.Button(self.settings_window, text='Kill ADB Server', command=self.kill_adb_server)
+        self.kill_button = tk.Button(
+            self.settings_window, text="Kill ADB Server", command=self.kill_adb_server
+        )
         self.kill_button.grid(row=5, column=1, padx=10, pady=10)
 
         # start adb server button
-        self.start_button = tk.Button(self.settings_window, text='Start ADB Server', command=self.start_adb_server)
+        self.start_button = tk.Button(
+            self.settings_window, text="Start ADB Server", command=self.start_adb_server
+        )
         self.start_button.grid(row=5, column=0, padx=10, pady=10)
 
         # save settings button
-        self.save_button = tk.Button(self.settings_window, text='Save Settings', command=self.save_settings)
+        self.save_button = tk.Button(
+            self.settings_window, text="Save Settings", command=self.save_settings
+        )
         self.save_button.grid(row=6, column=1, padx=10, pady=10)
 
     # === settings functions ===
@@ -193,8 +225,8 @@ class SettingsWindow:
 
     def save_settings(self):
         # save directories
-        gddt.config_manager.set_dir('android_dir', self.android_dir_entry.get())
-        gddt.config_manager.set_dir('pc_dir', self.pc_dir_entry.get())
+        gddt.config_manager.set_dir("android_dir", self.android_dir_entry.get())
+        gddt.config_manager.set_dir("pc_dir", self.pc_dir_entry.get())
 
         # save backups setting
         self.backups_setting_value = self.backups_setting.get()
@@ -206,12 +238,16 @@ class SettingsWindow:
 
     def kill_adb_server(self):
         self.kill_server_command = [str(gddt.path_adb), "kill-server"]
-        subprocess.run(self.kill_server_command, capture_output=True, text=True, check=False)
+        subprocess.run(
+            self.kill_server_command, capture_output=True, text=True, check=False
+        )
         main_window.change_msg("adb server is kil")
 
     def start_adb_server(self):
         self.start_server_command = [str(gddt.path_adb), "start-server"]
-        subprocess.run(self.start_server_command, capture_output=True, text=True, check=False)
+        subprocess.run(
+            self.start_server_command, capture_output=True, text=True, check=False
+        )
         main_window.change_msg("adb server started")
 
     def revert_last_transfer(self):
@@ -221,15 +257,18 @@ class SettingsWindow:
         else:
             self.prev_dest = "phone"
 
-        self.response = messagebox.askyesno("Confirm action",
-        "Doing this will revert the last transfer you have made, potentially" \
-            f" making you lose progress if the save files in your {self.prev_dest} are newer than the" \
-                f" backups made by GDDT. \n\nAre you sure you want to continue?")
+        self.response = messagebox.askyesno(
+            "Confirm action",
+            "Doing this will revert the last transfer you have made, potentially"
+            f" making you lose progress if the save files in your {self.prev_dest} are newer than the"
+            f" backups made by GDDT. \n\nAre you sure you want to continue?",
+        )
         if self.response is True:
             gddt.revert_last_transfer()
             main_window.change_msg("last transfer reverted")
         else:
             main_window.change_msg("revert cancelled")
+
 
 main_window = MainWindow()
 settings_window = SettingsWindow()
