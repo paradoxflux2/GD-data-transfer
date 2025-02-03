@@ -68,13 +68,13 @@ class MainWindow:
 
         # phone to computer button
         self.phone_button = tk.Button(
-            self.root, text="Phone to computer", command=self.phone_button_click
+            self.root, text="Phone to computer", command=lambda: self.set_direction("phone", "computer")
         )
         self.phone_button.pack(pady=3)
 
         # computer to phone button
         self.pc_button = tk.Button(
-            self.root, text="Computer to phone", command=self.pc_button_click
+            self.root, text="Computer to phone", command=lambda: self.set_direction("computer", "phone")
         )
         self.pc_button.pack(pady=3)
 
@@ -89,12 +89,6 @@ class MainWindow:
             self.source = new_source
             self.dest = new_dest
             self.change_msg(f"changed destination to {new_dest}")
-
-    def phone_button_click(self):
-        self.set_direction("phone", "computer")
-
-    def pc_button_click(self):
-        self.set_direction("computer", "phone")
 
     def transfer_button_click(self):
         """transfer button click"""
@@ -198,13 +192,17 @@ class SettingsWindow:
 
         # kill adb server button
         self.kill_button = tk.Button(
-            self.settings_window, text="Kill ADB Server", command=self.kill_adb_server
+            self.settings_window,
+            text="Kill ADB Server",
+            command=lambda: self.toggle_adb_server("kill-server"),
         )
         self.kill_button.grid(row=5, column=1, padx=10, pady=10)
 
         # start adb server button
         self.start_button = tk.Button(
-            self.settings_window, text="Start ADB Server", command=self.start_adb_server
+            self.settings_window,
+            text="Start ADB Server",
+            command=lambda: self.toggle_adb_server("start-server"),
         )
         self.start_button.grid(row=5, column=0, padx=10, pady=10)
 
@@ -236,19 +234,17 @@ class SettingsWindow:
 
         main_window.change_msg("saved settings!")
 
-    def kill_adb_server(self):
-        self.kill_server_command = [str(gddt.path_adb), "kill-server"]
+    def toggle_adb_server(self, command):
+        adb_command = [str(gddt.path_adb), command]
         subprocess.run(
-            self.kill_server_command, capture_output=True, text=True, check=False
+            adb_command, capture_output=True, text=True, check=False
         )
-        main_window.change_msg("adb server is kil")
+        if command == "start-server":
+            state = "started"
+        else:
+            state = "is kil"
 
-    def start_adb_server(self):
-        self.start_server_command = [str(gddt.path_adb), "start-server"]
-        subprocess.run(
-            self.start_server_command, capture_output=True, text=True, check=False
-        )
-        main_window.change_msg("adb server started")
+        main_window.change_msg(f"adb server {state}")
 
     def revert_last_transfer(self):
         # assign previous destination so it can be used in the messagebox
@@ -260,8 +256,8 @@ class SettingsWindow:
         self.response = messagebox.askyesno(
             "Confirm action",
             "Doing this will revert the last transfer you have made, potentially"
-            f" making you lose progress if the save files in your {self.prev_dest} are newer than the"
-            f" backups made by GDDT. \n\nAre you sure you want to continue?",
+            f" making you lose progress if the save files in your {self.prev_dest} are newer than"
+            f" the backups made by GDDT. \n\nAre you sure you want to continue?",
         )
         if self.response is True:
             gddt.revert_last_transfer()
