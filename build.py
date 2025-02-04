@@ -36,13 +36,20 @@ def copy_config():
     print("copied config to" + str(path_dist / 'settings.ini'))
 
 def download_adb():
+    # adapt url and adb files for each os
     if os.name == "nt":
         url = "https://dl.google.com/android/repository/platform-tools-latest-windows.zip"
         adb_files = ["adb.exe", "AdbWinUsbApi.dll", "AdbWinApi.dll"]
-    else:
-        # im sorry macos
+
+    elif sys.platform == "linux":
         url = "https://dl.google.com/android/repository/platform-tools-latest-linux.zip"
         adb_files = ["adb"]
+
+    elif sys.platform == "darwin":
+        url = "https://dl.google.com/android/repository/platform-tools-latest-darwin.zip"
+        adb_files = ["adb"]
+    else:
+        sys.exit(1)
 
     # download platform-tools
     print("downloading platform-tools from " + url)
