@@ -90,6 +90,13 @@ class MainWindow:
             self.dest = new_dest
             self.change_msg(f"changed destination to {new_dest}")
 
+    # error messages that will be replaced
+    # if a key is found in the command output, it will be replaced by its value
+    error_messages = {
+        "no devices/emulators found": "no devices found, is your device connected?",
+        "No such file": "please verify that directories are correct"
+    }
+
     def transfer_button_click(self):
         """transfer button click"""
         if self.source is None:
@@ -103,8 +110,15 @@ class MainWindow:
                 self.error_msg = self.transfer_result.stderr.strip()
 
                 # replace some error messages
+                for key, value in self.error_messages.items():
+                    if key in self.error_messages:
+                        self.error_msg = value
+                        break
+
                 if "no devices/emulators found" in self.error_msg:
                     self.error_msg = "no devices found, is your device connected?"
+                if "No such file" in self.error_msg:
+                    self.error_msg = "please verify that directories are correct"
 
                 self.change_msg(f"couldnt transfer save files\n{self.error_msg}")
 
@@ -127,7 +141,6 @@ class SettingsWindow:
         self.pc_dir_entry = None
         self.backups_setting = None
         self.backups_checkbox = None
-        self.revert_transfer_button = None
         self.revert_transfer_button = None
         self.kill_button = None
         self.start_button = None

@@ -183,13 +183,6 @@ def transfersaves(source, destination):
     android_dir = config_manager.android_dir
     filelist = config_manager.filelist
 
-    # check if pc directory exists
-    if not os.path.exists(pc_dir):
-        config_manager.set_last_transfer("None")
-        return subprocess.CompletedProcess(
-            args=[], returncode=1, stdout="", stderr="pc directory does not exist"
-        )
-
     for savefile in filelist:
         print(f"backing up {savefile}")
         backup_file(source, savefile)
