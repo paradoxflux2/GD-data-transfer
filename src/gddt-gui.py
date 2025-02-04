@@ -115,11 +115,6 @@ class MainWindow:
                         self.error_msg = value
                         break
 
-                if "no devices/emulators found" in self.error_msg:
-                    self.error_msg = "no devices found, is your device connected?"
-                if "No such file" in self.error_msg:
-                    self.error_msg = "please verify that directories are correct"
-
                 self.change_msg(f"couldnt transfer save files\n{self.error_msg}")
 
     def change_msg(self, new_message):
