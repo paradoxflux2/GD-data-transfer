@@ -40,6 +40,7 @@ class ConfigManager:
         self.filelist = None
         self.save_backups = None
         self.last_transfer = None
+        self.theme = None
 
     def read_config(self):
         """take things from config"""
@@ -64,6 +65,14 @@ class ConfigManager:
         # the last transfer done. "None" by default
         self.last_transfer = config.get("Files", "last_transfer")
 
+        # read theme (also making sure the option exists for backwards compatibility)
+        if not config.has_section("Other"):
+            config.add_section("Other")
+            self.write_config("Other", "theme", "breeze")
+        else:
+            self.theme = config.get("Other", "theme")
+
+
     def write_config(self, section, option, value):
         """writes to config and sets value"""
         config.set(section, option, value)
@@ -78,6 +87,8 @@ class ConfigManager:
             self.save_backups = value
         elif option == "last_transfer":
             self.last_transfer = value
+        elif option == "theme":
+            self.theme = value
 
         with open(self.path_config_file, "w", encoding="utf-8") as configfile:
             config.write(configfile)
