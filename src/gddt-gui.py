@@ -247,7 +247,7 @@ class SettingsWindow:
         self.current_theme = gddt.config_manager.theme
 
         # create theme dropdown menu
-        theme_options = main_window.root.get_themes()
+        theme_options = self.filter_themes(main_window.root.get_themes())
         theme_options.sort()
         self.theme = tk.StringVar(self.settings_window)
         self.theme.set(gddt.config_manager.theme)
@@ -294,6 +294,40 @@ class SettingsWindow:
 
         main_window.bg_color = main_window.style.lookup("TFrame", "background")
         main_window.root.configure(bg=main_window.bg_color)
+
+    def filter_themes(self, themes):
+        """filter out themes that suck"""
+        ugly_themes = [
+            "default",
+            "alt",
+            "aquativo",
+            "black",
+            "blue",
+            "clam",
+            "clearlooks",
+            "elegance",
+            "itft1",
+            "keramik",
+            "kroc",
+            "plastik",
+            "radiance",
+            "scidblue",
+            "scidgreen",
+            "scidgrey",
+            "scidmint",
+            "scidpink",
+            "scidpurple",
+            "scidsand",
+            "smog",
+            "ubuntu"
+        ]
+        good_themes = []
+
+        for theme in themes:
+            if theme not in ugly_themes:
+                good_themes.append(theme)
+
+        return good_themes
 
     def toggle_adb_server(self, command):
         adb_command = [str(gddt.path_adb), command]
