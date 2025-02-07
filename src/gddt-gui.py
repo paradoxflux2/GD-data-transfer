@@ -141,7 +141,7 @@ class MainWindow:
 class SettingsWindow:
     def __init__(self):
         self.settings_window = None
-        self.configlabel = None
+        self.fileslabel = None
         self.android_dir_label = None
         self.android_dir_entry = None
         self.pc_dir_label = None
@@ -154,13 +154,16 @@ class SettingsWindow:
         self.save_button = None
 
         self.backups_setting_value = None
-        self.kill_server_command = None
-        self.start_server_command = None
         self.prev_dest = None
         self.response = None
+        
+        self.otherlabel = None
+        self.kill_server_command = None
+        self.start_server_command = None
 
         self.style = None
         self.bg_color = None
+        self.theme_label = None
         self.theme = None
         self.theme_dropdown = None
         self.current_theme = None
@@ -177,28 +180,30 @@ class SettingsWindow:
         self.bg_color = self.style.lookup("TFrame", "background")
         self.settings_window.configure(bg=self.bg_color)
 
-        # title
-        self.configlabel = ttk.Label(
-            self.settings_window, text="Settings", font=("Arial", 12)
+        # files label
+        self.fileslabel = ttk.Label(
+            self.settings_window, text="Files", font=("Arial", 12)
         )
-        self.configlabel.grid(row=0, column=0, columnspan=2, pady=10, sticky=tk.EW)
+        self.fileslabel.grid(row=0, column=0, columnspan=2, pady=10, sticky=tk.N)
 
         # android dir label
         self.android_dir_label = ttk.Label(
             self.settings_window, text="Android Directory"
         )
-        self.android_dir_label.grid(row=1, column=0, padx=10, pady=10)
+        self.android_dir_label.grid(row=1, column=0, padx=10, pady=10, sticky=tk.E)
         # android dir entry
         self.android_dir_entry = ttk.Entry(self.settings_window)
-        self.android_dir_entry.grid(row=1, column=1, padx=10, pady=10)
+        self.android_dir_entry.grid(row=1, column=1, padx=10, pady=10, sticky=tk.W)
         self.android_dir_entry.insert(0, gddt.config_manager.android_dir)
 
         # pc dir label
-        self.pc_dir_label = ttk.Label(self.settings_window, text="Computer Directory")
-        self.pc_dir_label.grid(row=2, column=0, padx=10, pady=10)
+        self.pc_dir_label = ttk.Label(
+            self.settings_window, text="Computer Directory"
+        )
+        self.pc_dir_label.grid(row=2, column=0, padx=10, pady=10, sticky=tk.E)
         # pc dir entry
         self.pc_dir_entry = ttk.Entry(self.settings_window)
-        self.pc_dir_entry.grid(row=2, column=1, padx=10, pady=10)
+        self.pc_dir_entry.grid(row=2, column=1, padx=10, pady=10, sticky=tk.W)
         self.pc_dir_entry.insert(0, gddt.config_manager.pc_dir)
 
         # toggle backups
@@ -210,7 +215,7 @@ class SettingsWindow:
             onvalue=True,
             offvalue=False,
         )
-        self.backups_checkbox.grid(row=4, column=0, padx=10, pady=10)
+        self.backups_checkbox.grid(row=3, column=0, padx=10, pady=10)
 
         # revert transfer button
         self.revert_transfer_button = ttk.Button(
@@ -218,35 +223,21 @@ class SettingsWindow:
             text="Revert Last Transfer",
             command=self.revert_last_transfer,
         )
-        self.revert_transfer_button.grid(row=4, column=1, padx=10, pady=10)
+        self.revert_transfer_button.grid(row=3, column=1, padx=10, pady=10)
 
         self.refresh_revert_button_state()
 
-        # kill adb server button
-        self.kill_button = ttk.Button(
-            self.settings_window,
-            text="Kill ADB Server",
-            command=lambda: self.toggle_adb_server("kill-server"),
+        # other label
+        self.otherlabel = ttk.Label(
+            self.settings_window, text="Other", font=("Arial", 12)
         )
-        self.kill_button.grid(row=5, column=1, padx=10, pady=10)
+        self.otherlabel.grid(row=4, column=0, columnspan=2, pady=10, sticky=tk.N)
 
-        # start adb server button
-        self.start_button = ttk.Button(
-            self.settings_window,
-            text="Start ADB Server",
-            command=lambda: self.toggle_adb_server("start-server"),
-        )
-        self.start_button.grid(row=5, column=0, padx=10, pady=10)
+        # theme label
+        self.theme_label = ttk.Label(self.settings_window, text="Theme")
+        self.theme_label.grid(row=5, column=0, padx=10, pady=10, sticky=tk.E)
 
-        # save settings button
-        self.save_button = ttk.Button(
-            self.settings_window, text="Save Settings", command=self.save_settings
-        )
-        self.save_button.grid(row=6, column=1, padx=10, pady=10)
-
-        self.current_theme = gddt.config_manager.theme
-
-        # create theme dropdown menu
+        # theme dropdown menu
         theme_options = self.filter_themes(main_window.root.get_themes())
         theme_options.sort()
         self.theme = tk.StringVar(self.settings_window)
@@ -256,7 +247,31 @@ class SettingsWindow:
             self.settings_window, self.theme, gddt.config_manager.theme, *theme_options
         )
 
-        self.theme_dropdown.grid(row=3, column=0, columnspan=2, padx=10, pady=10)
+        self.theme_dropdown.grid(row=5, column=1, padx=10, pady=10, sticky=tk.W)
+
+        # kill adb server button
+        self.kill_button = ttk.Button(
+            self.settings_window,
+            text="Kill ADB Server",
+            command=lambda: self.toggle_adb_server("kill-server"),
+        )
+        self.kill_button.grid(row=6, column=1, padx=10, pady=10)
+
+        # start adb server button
+        self.start_button = ttk.Button(
+            self.settings_window,
+            text="Start ADB Server",
+            command=lambda: self.toggle_adb_server("start-server"),
+        )
+        self.start_button.grid(row=6, column=0, padx=10, pady=10)
+
+        # save settings button
+        self.save_button = ttk.Button(
+            self.settings_window, text="Save Settings", command=self.save_settings
+        )
+        self.save_button.grid(row=7, column=1, padx=10, pady=10)
+
+        self.current_theme = gddt.config_manager.theme
 
     # === settings functions ===
 
