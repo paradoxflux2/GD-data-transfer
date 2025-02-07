@@ -175,6 +175,8 @@ class SettingsWindow:
         self.settings_window.title("Settings")
         self.settings_window.resizable(0, 0)
 
+        sticky = {"sticky": "nswe"}
+
         # bg color
         self.style = ttk.Style(self.settings_window)
         self.bg_color = self.style.lookup("TFrame", "background")
@@ -269,7 +271,7 @@ class SettingsWindow:
         self.save_button = ttk.Button(
             self.settings_window, text="Save Settings", command=self.save_settings
         )
-        self.save_button.grid(row=7, column=1, padx=10, pady=10)
+        self.save_button.grid(row=7, padx=10, pady=10, columnspan=2, **sticky)
 
         self.current_theme = gddt.config_manager.theme
 
