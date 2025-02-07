@@ -41,6 +41,7 @@ class ConfigManager:
         self.save_backups = None
         self.last_transfer = None
         self.theme = None
+        self.hide_ugly_themes = None
 
     def read_config(self):
         """take things from config"""
@@ -65,12 +66,17 @@ class ConfigManager:
         # the last transfer done. "None" by default
         self.last_transfer = config.get("Files", "last_transfer")
 
-        # read theme (also making sure the option exists for backwards compatibility)
+        # backwards compatibility thing (<v0.1.0)
         if not config.has_section("Other"):
             config.add_section("Other")
-            self.write_config("Other", "theme", "breeze")
-        else:
-            self.theme = config.get("Other", "theme")
+            self.write_config("Other", "theme", "arc")
+            self.write_config("Other", "hide_ugly_themes", "True")
+
+        # ttk theme
+        self.theme = config.get("Other", "theme")
+        
+        # if the ugliest themes will be hidden from the themes dropdown
+        self.hide_ugly_themes = config.getboolean("Other", "hide_ugly_themes")
 
 
     def write_config(self, section, option, value):
@@ -89,6 +95,8 @@ class ConfigManager:
             self.last_transfer = value
         elif option == "theme":
             self.theme = value
+        elif option == "hide_ugly_themes":
+            self.hide_ugly_themes = value
 
         with open(self.path_config_file, "w", encoding="utf-8") as configfile:
             config.write(configfile)

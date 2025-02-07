@@ -297,37 +297,40 @@ class SettingsWindow:
 
     def filter_themes(self, themes):
         """filter out themes that suck"""
-        ugly_themes = [
-            "default",
-            "alt",
-            "aquativo",
-            "black",
-            "blue",
-            "clam",
-            "clearlooks",
-            "elegance",
-            "itft1",
-            "keramik",
-            "kroc",
-            "plastik",
-            "radiance",
-            "scidblue",
-            "scidgreen",
-            "scidgrey",
-            "scidmint",
-            "scidpink",
-            "scidpurple",
-            "scidsand",
-            "smog",
-            "ubuntu"
-        ]
-        good_themes = []
+        if gddt.config_manager.hide_ugly_themes:
+            ugly_themes = [
+                "default",
+                "alt",
+                "aquativo",
+                "black",
+                "blue",
+                "clam",
+                "clearlooks",
+                "elegance",
+                "itft1",
+                "keramik",
+                "kroc",
+                "plastik",
+                "radiance",
+                "scidblue",
+                "scidgreen",
+                "scidgrey",
+                "scidmint",
+                "scidpink",
+                "scidpurple",
+                "scidsand",
+                "smog",
+                "ubuntu"
+            ]
+            good_themes = []
 
-        for theme in themes:
-            if theme not in ugly_themes:
-                good_themes.append(theme)
+            for theme in themes:
+                if theme not in ugly_themes:
+                    good_themes.append(theme)
 
-        return good_themes
+            return good_themes
+        else:
+            return themes
 
     def toggle_adb_server(self, command):
         adb_command = [str(gddt.path_adb), command]
