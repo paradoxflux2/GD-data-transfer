@@ -11,7 +11,7 @@ from zipfile import ZipFile
 
 # paths
 path_current_directory = Path(__file__).parent
-path_gddt = path_current_directory / "src" / "gddt-gui.py"
+path_gddt_py = path_current_directory / "src" / "gddt-gui.py"
 path_config = path_current_directory / "settings-sample.ini"
 working_directory = Path.cwd()
 path_dist = working_directory / "dist"
@@ -21,7 +21,7 @@ def create_bundle():
         "pyinstaller",
         "--onefile",
         "--windowed",
-        str(path_gddt)
+        str(path_gddt_py)
         ]
 
     result = subprocess.run(command, check=False)
@@ -89,3 +89,10 @@ def download_adb():
 create_bundle()
 copy_config()
 download_adb()
+print("done :D")
+
+if sys.platform == "linux":
+    path_adb = path_dist / "adb" / "adb"
+    print("please give executable permission for ADB with this command:")
+    print(f"chmod +x {path_adb}")
+
