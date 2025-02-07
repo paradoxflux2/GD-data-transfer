@@ -40,24 +40,18 @@ class MainWindow:
         self.pc_button = None
         self.transfer_result = None
         self.error_msg = None
+        self.settings_button = None
 
     def create_ui(self):
         """create the ui for the main window"""
 
         self.title = ttk.Label(self.root, text="GD Data Transfer", font=("Arial", 18))
 
-        # create a menubar
-        self.menubar = tk.Menu(self.root)
-        self.root.config(menu=self.menubar)
+        # settings button
+        self.settings_button = ttk.Label(self.root, text="Settings", cursor="hand2")
+        self.settings_button.pack(anchor=tk.NW)
 
-        self.help_menu = tk.Menu(self.menubar, tearoff=False)
-
-        # Help menu buttons
-        self.help_menu.add_command(label="Settings", command=settings_window.create_ui)
-        self.help_menu.add_command(label="Exit", command=self.root.destroy)
-
-        # add the Help menu to the menubar
-        self.menubar.add_cascade(label="Help", menu=self.help_menu)
+        self.settings_button.bind("<Button-1>", func=lambda event: settings_window.create_ui())
 
         # title
         self.title.pack(padx=20, pady=20)
