@@ -11,15 +11,16 @@ from zipfile import ZipFile
 
 # paths
 path_current_directory = Path(__file__).parent
-path_gddt = path_current_directory / 'src' / 'gddt-gui.py'
-path_config = path_current_directory / 'settings-sample.ini'
+path_gddt = path_current_directory / "src" / "gddt-gui.py"
+path_config = path_current_directory / "settings-sample.ini"
 working_directory = Path.cwd()
-path_dist = working_directory / 'dist'
+path_dist = working_directory / "dist"
 
 def create_bundle():
     command = [
         "pyinstaller",
         "--onefile",
+        "--windowed",
         str(path_gddt)
         ]
 
@@ -31,9 +32,9 @@ def copy_config():
         print("\ncouldnt find dist directory because im stupid. please do everything else manually")
         sys.exit(1)
     else:
-        shutil.copy(path_config, path_dist / 'settings.ini')
+        shutil.copy(path_config, path_dist / "settings.ini")
 
-    print("copied config to" + str(path_dist / 'settings.ini'))
+    print("copied config to" + str(path_dist / "settings.ini"))
 
 def download_adb():
     # adapt url and adb files for each os
@@ -53,7 +54,7 @@ def download_adb():
 
     # download platform-tools
     print("downloading platform-tools from " + url)
-    path_platform_tools = path_dist / 'platform-tools.zip'
+    path_platform_tools = path_dist / "platform-tools.zip"
     urlretrieve(url, str(path_platform_tools))
     print("platform-tools downloaded")
 
@@ -70,10 +71,20 @@ def download_adb():
         extract(file)
 
     # rename platform-tools folder to adb
-    shutil.move(path_dist / 'platform-tools', path_dist / 'adb')
+    shutil.move(path_dist / "platform-tools", path_dist / "adb")
+
+    # rename gddt-gui to gddt
+    executable_name = "gddt-gui"
+    new_executable_name = "gddt"
+
+    if os.name == "nt":
+        executable_name += ".exe"
+        new_executable_name += ".exe"
+
+    os.rename(str(path_dist / executable_name), str(path_dist / new_executable_name))
 
     # remove platform-tools.zip now that we dont need it
-    os.remove(path_dist / 'platform-tools.zip')
+    os.remove(path_dist / "platform-tools.zip")
 
 create_bundle()
 copy_config()
