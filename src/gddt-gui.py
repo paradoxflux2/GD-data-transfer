@@ -19,9 +19,15 @@ class MainWindow:
     def __init__(self):
         self.root = ThemedTk(theme=gddt.config_manager.theme)
 
+        # window
         self.root.title("GD Data Transfer")
         self.root.geometry("500x300")
         self.root.resizable(0, 0)
+
+        # bg color
+        self.style = ttk.Style(self.root)
+        self.bg_color = self.style.lookup("TFrame", "background")
+        self.root.configure(bg=self.bg_color)
 
         self.source = None
         self.dest = None
@@ -70,13 +76,17 @@ class MainWindow:
 
         # phone to computer button
         self.phone_button = ttk.Button(
-            self.root, text="Phone to computer", command=lambda: self.set_direction("phone", "computer")
+            self.root,
+            text="Phone to computer",
+            command=lambda: self.set_direction("phone", "computer"),
         )
         self.phone_button.pack(pady=3)
 
         # computer to phone button
         self.pc_button = ttk.Button(
-            self.root, text="Computer to phone", command=lambda: self.set_direction("computer", "phone")
+            self.root,
+            text="Computer to phone",
+            command=lambda: self.set_direction("computer", "phone"),
         )
         self.pc_button.pack(pady=3)
 
@@ -96,7 +106,7 @@ class MainWindow:
     # if a key is found in the command output, it will be replaced by its value
     error_messages = {
         "no devices/emulators found": "no devices found, is your device connected?",
-        "No such file": "please verify that directories are correct"
+        "No such file": "please verify that directories are correct",
     }
 
     def transfer_button_click(self):
@@ -149,6 +159,12 @@ class SettingsWindow:
         self.prev_dest = None
         self.response = None
 
+        self.style = None
+        self.bg_color = None
+        self.theme = None
+        self.theme_dropdown = None
+        self.current_theme = None
+
     def create_ui(self):
         """open settings window"""
 
@@ -156,6 +172,12 @@ class SettingsWindow:
         self.settings_window.title("Settings")
         self.settings_window.resizable(0, 0)
 
+        # bg color
+        self.style = ttk.Style(self.settings_window)
+        self.bg_color = self.style.lookup("TFrame", "background")
+        self.settings_window.configure(bg=self.bg_color)
+
+        # title
         self.configlabel = ttk.Label(
             self.settings_window, text="Settings", font=("Arial", 12)
         )
@@ -222,6 +244,20 @@ class SettingsWindow:
         )
         self.save_button.grid(row=6, column=1, padx=10, pady=10)
 
+        self.current_theme = gddt.config_manager.theme
+
+        # create theme dropdown menu
+        theme_options = main_window.root.get_themes()
+        theme_options.sort()
+        self.theme = tk.StringVar(self.settings_window)
+        self.theme.set(gddt.config_manager.theme)
+
+        self.theme_dropdown = ttk.OptionMenu(
+            self.settings_window, self.theme, gddt.config_manager.theme, *theme_options
+        )
+
+        self.theme_dropdown.grid(row=3, column=0, columnspan=2, padx=10, pady=10)
+
     # === settings functions ===
 
     def refresh_revert_button_state(self):
@@ -242,13 +278,26 @@ class SettingsWindow:
 
         self.refresh_revert_button_state()
 
+        # save new theme
+        gddt.config_manager.write_config("Other", "theme", self.theme.get())
+        self.change_theme()
+
         main_window.change_msg("saved settings!")
+
+    def change_theme(self):
+        main_window.root.set_theme(self.theme.get())
+        main_window.root.update()
+
+        # change bg color
+        self.bg_color = self.style.lookup("TFrame", "background")
+        self.settings_window.configure(bg=self.bg_color)
+
+        main_window.bg_color = main_window.style.lookup("TFrame", "background")
+        main_window.root.configure(bg=main_window.bg_color)
 
     def toggle_adb_server(self, command):
         adb_command = [str(gddt.path_adb), command]
-        subprocess.run(
-            adb_command, capture_output=True, text=True, check=False
-        )
+        subprocess.run(adb_command, capture_output=True, text=True, check=False)
         if command == "start-server":
             state = "started"
         else:
