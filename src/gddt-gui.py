@@ -11,13 +11,14 @@ from tkinter import messagebox
 import subprocess
 import gddt
 from ttkthemes import ThemedTk
+from ttkwidgets.autocomplete import AutocompleteCombobox
 
 
 class MainWindow:
     """main window management"""
 
     def __init__(self):
-        self.root = ThemedTk(theme=gddt.config_manager.theme)
+        self.root = ThemedTk(theme=gddt.config_manager.theme, themebg=True)
 
         # window
         self.root.title("GD Data Transfer")
@@ -25,48 +26,32 @@ class MainWindow:
         self.root.resizable(0, 0)
 
         # bg color
-        self.style = ttk.Style(self.root)
-        self.bg_color = self.style.lookup("TFrame", "background")
-        self.root.configure(bg=self.bg_color)
+        # self.style = ttk.Style(self.root)
+        # self.bg_color = self.style.lookup("TFrame", "background")
+        # self.root.configure(bg=self.bg_color)
 
         self.source = None
         self.dest = None
-        self.label = None
-        self.title = None
-        self.menubar = None
-        self.help_menu = None
-        self.transfer_button = None
-        self.phone_button = None
-        self.pc_button = None
+
         self.transfer_result = None
         self.error_msg = None
-        self.settings_button = None
 
-    def create_ui(self):
-        """create the ui for the main window"""
-
-        self.title = ttk.Label(self.root, text="GD Data Transfer", font=("Arial", 18))
-
+        # create widgets
         # settings button
         self.settings_button = ttk.Label(self.root, text="Settings", cursor="hand2")
-        self.settings_button.pack(anchor=tk.NW)
-
-        self.settings_button.bind("<Button-1>", func=lambda event: settings_window.create_ui())
 
         # title
-        self.title.pack(padx=20, pady=20)
+        self.title = ttk.Label(self.root, text="GD Data Transfer", font=("Arial", 18))
 
         # message
         self.label = ttk.Label(
             self.root, text="please select a destination first", font=("Arial", 12)
         )
-        self.label.pack(side=tk.BOTTOM, padx=20, pady=20)
 
         # transfer button
         self.transfer_button = ttk.Button(
             self.root, text="Transfer", command=self.transfer_button_click
         )
-        self.transfer_button.pack(side=tk.BOTTOM)
 
         # phone to computer button
         self.phone_button = ttk.Button(
@@ -74,7 +59,6 @@ class MainWindow:
             text="Phone to computer",
             command=lambda: self.set_direction("phone", "computer"),
         )
-        self.phone_button.pack(pady=3)
 
         # computer to phone button
         self.pc_button = ttk.Button(
@@ -82,6 +66,27 @@ class MainWindow:
             text="Computer to phone",
             command=lambda: self.set_direction("computer", "phone"),
         )
+
+        self.pack_widgets()
+
+    def pack_widgets(self):
+        """create the ui for the main window"""
+
+        # settings button
+        self.settings_button.pack(anchor=tk.NW)
+        self.settings_button.bind(
+            "<Button-1>", func=lambda event: settings_window.create_ui()
+        )
+
+        # title
+        self.title.pack(padx=20, pady=20)
+
+        # message
+        self.label.pack(side=tk.BOTTOM, padx=20, pady=20)
+
+        # transfer buttons
+        self.transfer_button.pack(side=tk.BOTTOM)
+        self.phone_button.pack(pady=3)
         self.pc_button.pack(pady=3)
 
     # === main window functions ===
@@ -133,6 +138,8 @@ class MainWindow:
 
 
 class SettingsWindow:
+    """the settings window"""
+
     def __init__(self):
         self.settings_window = None
         self.fileslabel = None
@@ -150,7 +157,7 @@ class SettingsWindow:
         self.backups_setting_value = None
         self.prev_dest = None
         self.response = None
-        
+
         self.otherlabel = None
         self.kill_server_command = None
         self.start_server_command = None
@@ -158,23 +165,26 @@ class SettingsWindow:
         self.style = None
         self.bg_color = None
         self.theme_label = None
-        self.theme = None
-        self.theme_dropdown = None
-        self.current_theme = None
+        self.new_theme = None
+        self.current_theme = gddt.config_manager.theme
+        self.themes_combo = None
+        self.theme_options = None
 
     def create_ui(self):
         """open settings window"""
 
+        # this always broke the default value of the backups checkbox for some reason
+        # self.settings_window = ThemedTk(theme=gddt.config_manager.theme, themebg=True)
         self.settings_window = tk.Toplevel()
         self.settings_window.title("Settings")
         self.settings_window.resizable(0, 0)
 
-        sticky = {"sticky": "nswe"}
-
-        # bg color
+        # manually set bg color
         self.style = ttk.Style(self.settings_window)
         self.bg_color = self.style.lookup("TFrame", "background")
         self.settings_window.configure(bg=self.bg_color)
+
+        sticky = {"sticky": "nswe"}
 
         # files label
         self.fileslabel = ttk.Label(
@@ -193,16 +203,14 @@ class SettingsWindow:
         self.android_dir_entry.insert(0, gddt.config_manager.android_dir)
 
         # pc dir label
-        self.pc_dir_label = ttk.Label(
-            self.settings_window, text="Computer Directory"
-        )
+        self.pc_dir_label = ttk.Label(self.settings_window, text="Computer Directory")
         self.pc_dir_label.grid(row=2, column=0, padx=10, pady=10, sticky=tk.E)
         # pc dir entry
         self.pc_dir_entry = ttk.Entry(self.settings_window)
         self.pc_dir_entry.grid(row=2, column=1, padx=10, pady=10, sticky=tk.W)
         self.pc_dir_entry.insert(0, gddt.config_manager.pc_dir)
 
-        # toggle backups
+        # save backups
         self.backups_setting = tk.BooleanVar(value=gddt.config_manager.save_backups)
         self.backups_checkbox = ttk.Checkbutton(
             self.settings_window,
@@ -233,17 +241,18 @@ class SettingsWindow:
         self.theme_label = ttk.Label(self.settings_window, text="Theme")
         self.theme_label.grid(row=5, column=0, padx=10, pady=10, sticky=tk.E)
 
-        # theme dropdown menu
-        theme_options = self.filter_themes(main_window.root.get_themes())
-        theme_options.sort()
-        self.theme = tk.StringVar(self.settings_window)
-        self.theme.set(gddt.config_manager.theme)
+        # theme combo
+        self.theme_options = self.filter_themes(main_window.root.get_themes())
+        self.theme_options.sort()
+        self.new_theme = tk.StringVar(self.settings_window)
 
-        self.theme_dropdown = ttk.OptionMenu(
-            self.settings_window, self.theme, gddt.config_manager.theme, *theme_options
+        self.themes_combo = AutocompleteCombobox(
+            self.settings_window,
+            completevalues=self.theme_options,
+            textvariable=self.new_theme,
         )
-
-        self.theme_dropdown.grid(row=5, column=1, padx=10, pady=10, sticky=tk.W)
+        self.themes_combo.set(self.current_theme)
+        self.themes_combo.grid(row=5, column=1, padx=10, pady=10, sticky=tk.W)
 
         # kill adb server button
         self.kill_button = ttk.Button(
@@ -267,8 +276,6 @@ class SettingsWindow:
         )
         self.save_button.grid(row=7, padx=10, pady=10, columnspan=2, **sticky)
 
-        self.current_theme = gddt.config_manager.theme
-
     # === settings functions ===
 
     def refresh_revert_button_state(self):
@@ -290,21 +297,22 @@ class SettingsWindow:
         self.refresh_revert_button_state()
 
         # save new theme
-        gddt.config_manager.write_config("Other", "theme", self.theme.get())
-        self.change_theme()
+        if self.new_theme.get() in main_window.root.get_themes():
+            gddt.config_manager.write_config("Other", "theme", self.new_theme.get())
+            self.update_theme()
 
         main_window.change_msg("saved settings!")
 
-    def change_theme(self):
-        main_window.root.set_theme(self.theme.get())
+    def update_theme(self):
+        """updates the theme"""
+        main_window.root.set_theme(self.themes_combo.get())
         main_window.root.update()
 
-        # change bg color
+        # manually update bg color for the settings window
         self.bg_color = self.style.lookup("TFrame", "background")
         self.settings_window.configure(bg=self.bg_color)
 
-        main_window.bg_color = main_window.style.lookup("TFrame", "background")
-        main_window.root.configure(bg=main_window.bg_color)
+        self.current_theme = self.new_theme.get()
 
     def filter_themes(self, themes):
         """filter out themes that suck"""
@@ -331,7 +339,7 @@ class SettingsWindow:
                 "scidpurple",
                 "scidsand",
                 "smog",
-                "ubuntu"
+                "ubuntu",
             ]
             good_themes = []
 
@@ -340,8 +348,8 @@ class SettingsWindow:
                     good_themes.append(theme)
 
             return good_themes
-        else:
-            return themes
+
+        return themes
 
     def toggle_adb_server(self, command):
         adb_command = [str(gddt.path_adb), command]
@@ -377,7 +385,4 @@ main_window = MainWindow()
 settings_window = SettingsWindow()
 
 if __name__ == "__main__":
-
-    main_window.create_ui()
-
     main_window.root.mainloop()
