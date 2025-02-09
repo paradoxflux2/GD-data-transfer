@@ -1,4 +1,6 @@
-"""turns GDDT into an executable and does other stuff"""
+"""
+turns GDDT into an executable and does other stuff
+"""
 
 import sys
 import os
@@ -22,18 +24,6 @@ def create_bundle():
 
     result = subprocess.run(command, check=False)
     print(result)
-
-
-def copy_config():
-    if not os.path.exists(path_dist):  # not sure if this will always work so
-        print(
-            "\ncouldnt find dist directory because im stupid. please do everything else manually"
-        )
-        sys.exit(1)
-    else:
-        shutil.copy(path_config, path_dist / "settings.ini")
-
-    print("copied config to" + str(path_dist / "settings.ini"))
 
 
 def download_adb():
@@ -77,6 +67,19 @@ def download_adb():
     # rename platform-tools folder to adb
     shutil.move(path_dist / "platform-tools", path_dist / "adb")
 
+
+def move_files():
+    # copy config
+    if not os.path.exists(path_dist):  # not sure if this will always work so
+        print(
+            "\ncouldnt find dist directory because im stupid. please do everything else manually"
+        )
+        sys.exit(1)
+    else:
+        shutil.copy(path_config, path_dist / "settings.ini")
+
+    print("copied config to" + str(path_dist / "settings.ini"))
+
     # rename gddt-gui to gddt
     executable_name = "gddt-gui"
     new_executable_name = "gddt"
@@ -89,14 +92,38 @@ def download_adb():
 
     # remove platform-tools.zip now that we dont need it
     os.remove(path_dist / "platform-tools.zip")
+    print("removed platform-tools.zip")
 
     # copy icon.png to dist
     shutil.copy(path_current_directory / "assets" / "icon.png", path_dist / "icon.png")
+    print("copied icon.png")
+
+
+def create_archive():
+    prefix = "gddt-"
+
+    if os.name == "nt":
+        name = f"{prefix}windows"
+    elif sys.platform == "linux":
+        name = f"{prefix}linux"
+    else:
+        name = f"{prefix}macos"
+
+    # the archive will be made in the dist parent to avoid compressing itself
+    path = path_dist.parent / name
+
+    shutil.make_archive(
+        path,
+        "zip",
+        path_dist,
+    )
 
 
 create_bundle()
-copy_config()
 download_adb()
+move_files()
+create_archive()
+
 print("done :D")
 
 if sys.platform == "linux":
