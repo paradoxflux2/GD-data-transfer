@@ -1,8 +1,5 @@
 """
-this is (supposed to be) only the gui, most other stuff
-is in gddt.py
-
-uses python 3.11
+this is (supposed to be) only the gui for gddt
 """
 
 import tkinter as tk

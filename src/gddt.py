@@ -2,8 +2,6 @@
 this file handles reading config and transferring data
 
 GUI stuff is in gddt-gui.py
-
-uses python 3.11
 """
 
 import os
@@ -74,10 +72,9 @@ class ConfigManager:
 
         # ttk theme
         self.theme = config.get("Other", "theme")
-        
+
         # if the ugliest themes will be hidden from the themes dropdown
         self.hide_ugly_themes = config.getboolean("Other", "hide_ugly_themes")
-
 
     def write_config(self, section, option, value):
         """writes to config and sets value"""

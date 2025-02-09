@@ -90,8 +90,8 @@ def download_adb():
     # remove platform-tools.zip now that we dont need it
     os.remove(path_dist / "platform-tools.zip")
 
-    # move icon.png to dist
-    shutil.move(path_current_directory / "assets" / "icon.png", path_dist / "icon.png")
+    # copy icon.png to dist
+    shutil.copy(path_current_directory / "assets" / "icon.png", path_dist / "icon.png")
 
 
 create_bundle()
