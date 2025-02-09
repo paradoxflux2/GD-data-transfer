@@ -16,30 +16,32 @@ path_config = path_current_directory / "settings-sample.ini"
 working_directory = Path.cwd()
 path_dist = working_directory / "dist"
 
+
 def create_bundle():
-    command = [
-        "pyinstaller",
-        "--onefile",
-        "--windowed",
-        str(path_gddt_py)
-        ]
+    command = ["pyinstaller", "--onefile", "--windowed", str(path_gddt_py)]
 
     result = subprocess.run(command, check=False)
     print(result)
 
+
 def copy_config():
-    if not os.path.exists(path_dist): # not sure if this will always work so
-        print("\ncouldnt find dist directory because im stupid. please do everything else manually")
+    if not os.path.exists(path_dist):  # not sure if this will always work so
+        print(
+            "\ncouldnt find dist directory because im stupid. please do everything else manually"
+        )
         sys.exit(1)
     else:
         shutil.copy(path_config, path_dist / "settings.ini")
 
     print("copied config to" + str(path_dist / "settings.ini"))
 
+
 def download_adb():
     # adapt url and adb files for each os
     if os.name == "nt":
-        url = "https://dl.google.com/android/repository/platform-tools-latest-windows.zip"
+        url = (
+            "https://dl.google.com/android/repository/platform-tools-latest-windows.zip"
+        )
         adb_files = ["adb.exe", "AdbWinUsbApi.dll", "AdbWinApi.dll"]
 
     elif sys.platform == "linux":
@@ -47,7 +49,9 @@ def download_adb():
         adb_files = ["adb"]
 
     elif sys.platform == "darwin":
-        url = "https://dl.google.com/android/repository/platform-tools-latest-darwin.zip"
+        url = (
+            "https://dl.google.com/android/repository/platform-tools-latest-darwin.zip"
+        )
         adb_files = ["adb"]
     else:
         sys.exit(1)
@@ -61,7 +65,7 @@ def download_adb():
     # extract necessary adb files
     # (couldnt figure out a better way to do this im sorry)
     def extract(file_name):
-        with ZipFile(str(path_platform_tools), 'r') as platformtools:
+        with ZipFile(str(path_platform_tools), "r") as platformtools:
             for file in platformtools.namelist():
                 if file.endswith(file_name):
                     platformtools.extract(file, path=path_dist)
@@ -86,6 +90,10 @@ def download_adb():
     # remove platform-tools.zip now that we dont need it
     os.remove(path_dist / "platform-tools.zip")
 
+    # move icon.png to dist
+    shutil.move(path_current_directory / "assets" / "icon.png", path_dist / "icon.png")
+
+
 create_bundle()
 copy_config()
 download_adb()
@@ -95,4 +103,3 @@ if sys.platform == "linux":
     path_adb = path_dist / "adb" / "adb"
     print("please give executable permission for ADB with this command:")
     print(f"chmod +x {path_adb}")
-

@@ -15,7 +15,9 @@ from ttkwidgets.autocomplete import AutocompleteCombobox
 
 
 class MainWindow:
-    """main window management"""
+    """
+    main window management
+    """
 
     def __init__(self):
         self.root = ThemedTk(theme=gddt.config_manager.theme, themebg=True)
@@ -25,10 +27,13 @@ class MainWindow:
         self.root.geometry("500x300")
         self.root.resizable(0, 0)
 
-        # bg color
-        # self.style = ttk.Style(self.root)
-        # self.bg_color = self.style.lookup("TFrame", "background")
-        # self.root.configure(bg=self.bg_color)
+        # set icon
+        if gddt.IS_BUNDLE:
+            icon_path = gddt.path_current_directory / "icon.png"
+        else:
+            icon_path = gddt.path_current_directory / ".." / "assets" / "icon.png"
+
+        self.root.iconphoto(True, tk.PhotoImage(file=icon_path))
 
         self.source = None
         self.dest = None
@@ -70,7 +75,9 @@ class MainWindow:
         self.pack_widgets()
 
     def pack_widgets(self):
-        """create the ui for the main window"""
+        """
+        create the ui for the main window
+        """
 
         # settings button
         self.settings_button.pack(anchor=tk.NW)
@@ -92,7 +99,9 @@ class MainWindow:
     # === main window functions ===
 
     def set_direction(self, new_source, new_dest):
-        """sets new source and destination"""
+        """
+        sets new source and destination
+        """
 
         if self.source == new_source:
             self.change_msg(f"destination was already {new_dest}, are you stupid?")
@@ -109,7 +118,9 @@ class MainWindow:
     }
 
     def transfer_button_click(self):
-        """transfer button click"""
+        """
+        transfer button click
+        """
         if self.source is None:
             self.change_msg("you didnt select anything")
         else:
@@ -129,7 +140,9 @@ class MainWindow:
                 self.change_msg(f"couldnt transfer save files\n{self.error_msg}")
 
     def change_msg(self, new_message):
-        """change message in window and print same message"""
+        """
+        change message in window and print same message
+        """
         print(new_message)
         self.label.config(text=new_message)
 
@@ -138,7 +151,9 @@ class MainWindow:
 
 
 class SettingsWindow:
-    """the settings window"""
+    """
+    the fucking settings window
+    """
 
     def __init__(self):
         self.settings_window = None
@@ -171,7 +186,9 @@ class SettingsWindow:
         self.theme_options = None
 
     def create_ui(self):
-        """open settings window"""
+        """
+        open settings window
+        """
 
         # this always broke the default value of the backups checkbox for some reason
         # self.settings_window = ThemedTk(theme=gddt.config_manager.theme, themebg=True)
@@ -279,13 +296,18 @@ class SettingsWindow:
     # === settings functions ===
 
     def refresh_revert_button_state(self):
-        """disable revert transfer button if backups are disabled or no transfers have been made"""
+        """
+        disable revert transfer button if backups are disabled or no transfers have been made
+        """
         if self.backups_setting.get() and gddt.config_manager.last_transfer != "None":
             self.revert_transfer_button.config(state=tk.NORMAL)
         else:
             self.revert_transfer_button.config(state=tk.DISABLED)
 
     def save_settings(self):
+        """
+        saves settings to config file
+        """
         # save directories
         gddt.config_manager.set_dir("android_dir", self.android_dir_entry.get())
         gddt.config_manager.set_dir("pc_dir", self.pc_dir_entry.get())
@@ -304,7 +326,9 @@ class SettingsWindow:
         main_window.change_msg("saved settings!")
 
     def update_theme(self):
-        """updates the theme"""
+        """
+        updates the theme
+        """
         main_window.root.set_theme(self.themes_combo.get())
         main_window.root.update()
 
@@ -315,7 +339,9 @@ class SettingsWindow:
         self.current_theme = self.new_theme.get()
 
     def filter_themes(self, themes):
-        """filter out themes that suck"""
+        """
+        filter out themes that suck
+        """
         if gddt.config_manager.hide_ugly_themes:
             ugly_themes = [
                 "default",
