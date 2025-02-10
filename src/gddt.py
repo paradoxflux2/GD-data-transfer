@@ -40,6 +40,7 @@ class ConfigManager:
         self.last_transfer = None
         self.theme = None
         self.hide_ugly_themes = None
+        self.show_actual_error_messages = None
 
     def read_config(self):
         """take things from config"""
@@ -76,27 +77,30 @@ class ConfigManager:
         # if the ugliest themes will be hidden from the themes dropdown
         self.hide_ugly_themes = config.getboolean("Other", "hide_ugly_themes")
 
+        # if actual error messages will be shown when transfer fails
+        self.show_actual_error_messages = config.getboolean(
+            "Other", "show_actual_error_messages"
+        )
+
     def write_config(self, section, option, value):
         """writes to config and sets value"""
         config.set(section, option, value)
-
-        if option == "android_dir":
-            self.android_dir = value
-        elif option == "pc_dir":
-            self.pc_dir = value
-        elif option == "filelist":
-            self.filelist = value
-        elif option == "save_backups":
-            self.save_backups = value
-        elif option == "last_transfer":
-            self.last_transfer = value
-        elif option == "theme":
-            self.theme = value
-        elif option == "hide_ugly_themes":
-            self.hide_ugly_themes = value
-
         with open(self.path_config_file, "w", encoding="utf-8") as configfile:
             config.write(configfile)
+
+        options = [
+            "android_dir",
+            "pc_dir",
+            "file_list",
+            "save_backups",
+            "last_transfer",
+            "theme",
+            "hide_ugly_themes",
+            "show_actual_error_messages",
+        ]
+
+        if option in options:
+            setattr(self, option, value)
 
     def set_dir(self, directory, new_path):
         """sets new directory and writes it to config"""

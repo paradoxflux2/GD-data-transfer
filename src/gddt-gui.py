@@ -129,10 +129,11 @@ class MainWindow:
                 self.error_msg = self.transfer_result.stderr.strip()
 
                 # replace some error messages
-                for key, value in self.error_messages.items():
-                    if key in self.error_messages:
-                        self.error_msg = value
-                        break
+                if not gddt.config_manager.show_actual_error_messages:
+                    for key, value in self.error_messages.items():
+                        if key in self.error_messages:
+                            self.error_msg = value
+                            break
 
                 self.change_msg(f"couldnt transfer save files\n{self.error_msg}")
 
@@ -306,12 +307,18 @@ class SettingsWindow:
         saves settings to config file
         """
         # save directories
-        gddt.config_manager.set_dir("android_dir", self.android_dir_entry.get())
-        gddt.config_manager.set_dir("pc_dir", self.pc_dir_entry.get())
+        gddt.config_manager.write_config(
+            "Directories", "android_dir", self.android_dir_entry.get()
+        )
+        gddt.config_manager.write_config(
+            "Directories", "pc_dir", self.pc_dir_entry.get()
+        )
 
         # save backups setting
         self.backups_setting_value = self.backups_setting.get()
-        gddt.config_manager.set_backups_setting(self.backups_setting_value)
+        gddt.config_manager.write_config(
+            "Files", "save_backups", str(self.backups_setting.get())
+        )
 
         self.refresh_revert_button_state()
 
