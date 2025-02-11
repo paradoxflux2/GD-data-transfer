@@ -29,7 +29,7 @@ class MainWindow:
         if gddt.IS_BUNDLE:
             icon_path = gddt.path_current_directory / "icon.png"
         else:
-            icon_path = gddt.path_current_directory / ".." / "assets" / "icon.png"
+            icon_path = gddt.path_current_directory.parent / "assets" / "icon.png"
 
         self.root.iconphoto(True, tk.PhotoImage(file=icon_path))
 
@@ -134,7 +134,7 @@ class MainWindow:
                 # replace some error messages
                 if not gddt.config_manager.show_actual_error_messages:
                     for key, value in self.error_messages.items():
-                        if key in self.error_messages:
+                        if key in self.error_msg:
                             self.error_msg = value
                             break
 
@@ -190,7 +190,7 @@ class SettingsWindow:
         self.kill_server_command = None
         self.start_server_command = None
 
-        self.style = None
+        self.style = ttk.Style(self.settings_window)
         self.bg_color = None
         self.theme_label = None
         self.new_theme = None
@@ -210,7 +210,6 @@ class SettingsWindow:
         self.settings_window.resizable(0, 0)
 
         # manually set bg color
-        self.style = ttk.Style(self.settings_window)
         self.bg_color = self.style.lookup("TFrame", "background")
         self.settings_window.configure(bg=self.bg_color)
 
@@ -406,13 +405,13 @@ class SettingsWindow:
         """
         if gddt.config_manager.hide_ugly_themes:
             ugly_themes = [
-                "default",
                 "alt",
                 "aquativo",
                 "black",
                 "blue",
                 "clam",
                 "clearlooks",
+                "default",
                 "elegance",
                 "itft1",
                 "keramik",
