@@ -8,3 +8,4 @@ pywin32-ctypes==0.2.3
 setuptools==75.8.0
 ttkthemes==3.2.2
 ttkwidgets==0.13.0
+tkinter-tooltip==3.1.2

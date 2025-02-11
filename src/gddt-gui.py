@@ -1,5 +1,5 @@
 """
-this is (supposed to be) only the gui for gddt
+the gui for gddt
 """
 
 import tkinter as tk
@@ -9,6 +9,7 @@ import subprocess
 import gddt
 from ttkthemes import ThemedTk
 from ttkwidgets.autocomplete import AutocompleteCombobox
+import tktooltip
 
 
 class MainWindow:
@@ -70,6 +71,8 @@ class MainWindow:
         )
 
         self.pack_widgets()
+
+        self.check_settings_messagebox()
 
     def pack_widgets(self):
         """
@@ -144,6 +147,15 @@ class MainWindow:
         print(new_message)
         self.label.config(text=new_message)
 
+    def check_settings_messagebox(self):
+        if gddt.config_manager.first_run:
+            messagebox.showinfo(
+                "Info",
+                "Before attempting to transfer, please go to the settings "
+                "and make sure that the values are correct.",
+            )
+            gddt.config_manager.write_config("Other", "first_run", "False")
+
 
 # === settings ===
 
@@ -154,6 +166,9 @@ class SettingsWindow:
     """
 
     def __init__(self):
+        # "i wish there was an easier way to do this" ahh
+        # i tried moving some of the declarations in
+        # create_ui to here but that broke some things so uhh yeah
         self.settings_window = None
         self.fileslabel = None
         self.android_dir_label = None
@@ -209,7 +224,7 @@ class SettingsWindow:
 
         # android dir label
         self.android_dir_label = ttk.Label(
-            self.settings_window, text="Android Directory"
+            self.settings_window, text="Phone save files"
         )
         self.android_dir_label.grid(row=1, column=0, padx=10, pady=10, sticky=tk.E)
         # android dir entry
@@ -218,7 +233,7 @@ class SettingsWindow:
         self.android_dir_entry.insert(0, gddt.config_manager.android_dir)
 
         # pc dir label
-        self.pc_dir_label = ttk.Label(self.settings_window, text="Computer Directory")
+        self.pc_dir_label = ttk.Label(self.settings_window, text="Computer save files")
         self.pc_dir_label.grid(row=2, column=0, padx=10, pady=10, sticky=tk.E)
         # pc dir entry
         self.pc_dir_entry = ttk.Entry(self.settings_window)
@@ -235,6 +250,13 @@ class SettingsWindow:
             offvalue=False,
         )
         self.backups_checkbox.grid(row=3, column=0, padx=10, pady=10)
+        # save backups tooltip
+        tktooltip.ToolTip(
+            self.backups_checkbox,
+            msg="If backups will be saved every "
+            "time the transfer button is clicked.",
+            delay=1.0,
+        )
 
         # revert transfer button
         self.revert_transfer_button = ttk.Button(
@@ -245,6 +267,14 @@ class SettingsWindow:
         self.revert_transfer_button.grid(row=3, column=1, padx=10, pady=10)
 
         self.refresh_revert_button_state()
+
+        tktooltip.ToolTip(
+            self.revert_transfer_button,
+            msg="Reverts the previous transfer. Useful if, for example, you accidentally"
+            " clicked the wrong destination so you lost some progress there."
+            "\n\nOnly works with 'Make Backups' enabled.",
+            delay=1.0,
+        )
 
         # other label
         self.otherlabel = ttk.Label(
@@ -269,6 +299,16 @@ class SettingsWindow:
         self.themes_combo.set(self.current_theme)
         self.themes_combo.grid(row=5, column=1, padx=10, pady=10, sticky=tk.W)
 
+        # theme combo tooltip
+        tktooltip.ToolTip(
+            self.themes_combo,
+            msg="The TTK Theme that the program will use."
+            "\nMost of the default themes are hidden because they suck,"
+            " you can still type them in though. Or you can also change"
+            " hide_ugly_themes in settings.ini if you prefer.",
+            delay=1.0,
+        )
+
         # kill adb server button
         self.kill_button = ttk.Button(
             self.settings_window,
@@ -276,6 +316,14 @@ class SettingsWindow:
             command=lambda: self.toggle_adb_server("kill-server"),
         )
         self.kill_button.grid(row=6, column=1, padx=10, pady=10)
+        # kill adb server tooltip
+        tktooltip.ToolTip(
+            self.kill_button,
+            msg="Kills the ADB server."
+            "\nI recommend always doing this after"
+            " transferring.",
+            delay=1.0,
+        )
 
         # start adb server button
         self.start_button = ttk.Button(
@@ -284,6 +332,16 @@ class SettingsWindow:
             command=lambda: self.toggle_adb_server("start-server"),
         )
         self.start_button.grid(row=6, column=0, padx=10, pady=10)
+        # start adb server tooltip
+        tktooltip.ToolTip(
+            self.start_button,
+            msg="Starts the ADB server."
+            "\nThis is automatically done when transferring"
+            " so this button is kinda useless but I already added"
+            " 'Kill ADB Server' so it would feel kinda weird not to have"
+            " this button too",
+            delay=1.0,
+        )
 
         # save settings button
         self.save_button = ttk.Button(

@@ -1,7 +1,5 @@
 """
 this file handles reading config and transferring data
-
-GUI stuff is in gddt-gui.py
 """
 
 import os
@@ -41,6 +39,7 @@ class ConfigManager:
         self.theme = None
         self.hide_ugly_themes = None
         self.show_actual_error_messages = None
+        self.first_run = None
 
     def read_config(self):
         """take things from config"""
@@ -82,6 +81,8 @@ class ConfigManager:
             "Other", "show_actual_error_messages"
         )
 
+        self.first_run = config.getboolean("Other", "first_run")
+
     def write_config(self, section, option, value):
         """writes to config and sets value"""
         config.set(section, option, value)
@@ -97,6 +98,7 @@ class ConfigManager:
             "theme",
             "hide_ugly_themes",
             "show_actual_error_messages",
+            "first_run",
         ]
 
         if option in options:
