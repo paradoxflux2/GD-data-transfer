@@ -160,7 +160,7 @@ class MainWindow:
         if gddt.config_manager.first_run:
             messagebox.showinfo(
                 "Info",
-                "Before attempting to transfer, please go to the settings "
+                "Before clicking 'transfer', please go to the settings "
                 "and make sure that the values are correct.",
             )
             gddt.config_manager.write_config("Other", "first_run", "False")
