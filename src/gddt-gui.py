@@ -140,12 +140,21 @@ class MainWindow:
 
                 self.change_msg(f"couldnt transfer save files\n{self.error_msg}")
 
-    def change_msg(self, new_message):
+    def change_msg(self, new_message, fontsize=12):
         """
         change message in window and print same message
         """
         print(new_message)
-        self.label.config(text=new_message)
+
+        # change text size depending on the message length
+        chars_before_resize = 60
+
+        message_length = len(new_message)
+        if message_length > chars_before_resize:
+            fontsize = fontsize * (0.995 ** (message_length - chars_before_resize))
+            fontsize = round(max(fontsize, 5))
+
+        self.label.config(text=new_message, font=("Arial", fontsize))
 
     def check_settings_messagebox(self):
         if gddt.config_manager.first_run:
@@ -191,7 +200,8 @@ class SettingsWindow:
         self.start_server_command = None
 
         self.style = ttk.Style(self.settings_window)
-        self.bg_color = None
+        self.bg_color = self.style.lookup("TFrame", "background")
+        self.fg_color = self.style.lookup("TFrame", "foreground")
         self.theme_label = None
         self.new_theme = None
         self.current_theme = gddt.config_manager.theme
@@ -210,7 +220,6 @@ class SettingsWindow:
         self.settings_window.resizable(0, 0)
 
         # manually set bg color
-        self.bg_color = self.style.lookup("TFrame", "background")
         self.settings_window.configure(bg=self.bg_color)
 
         sticky = {"sticky": "nswe"}
@@ -250,11 +259,10 @@ class SettingsWindow:
         )
         self.backups_checkbox.grid(row=3, column=0, padx=10, pady=10)
         # save backups tooltip
-        tktooltip.ToolTip(
+        self.add_tooltip(
             self.backups_checkbox,
             msg="If backups will be saved every "
             "time the transfer button is clicked.",
-            delay=1.0,
         )
 
         # revert transfer button
@@ -267,12 +275,11 @@ class SettingsWindow:
 
         self.refresh_revert_button_state()
 
-        tktooltip.ToolTip(
+        self.add_tooltip(
             self.revert_transfer_button,
-            msg="Reverts the previous transfer. Useful if, for example, you accidentally"
-            " clicked the wrong destination so you lost some progress there."
+            msg="Reverts the previous transfer.\nUseful if, for example, you accidentally"
+            " clicked the wrong destination so you lost\nsome progress there."
             "\n\nOnly works with 'Make Backups' enabled.",
-            delay=1.0,
         )
 
         # other label
@@ -299,13 +306,12 @@ class SettingsWindow:
         self.themes_combo.grid(row=5, column=1, padx=10, pady=10, sticky=tk.W)
 
         # theme combo tooltip
-        tktooltip.ToolTip(
+        self.add_tooltip(
             self.themes_combo,
             msg="The TTK Theme that the program will use."
             "\nMost of the default themes are hidden because they suck,"
             " you can still type them in though. Or you can also change"
             " hide_ugly_themes in settings.ini if you prefer.",
-            delay=1.0,
         )
 
         # kill adb server button
@@ -316,12 +322,11 @@ class SettingsWindow:
         )
         self.kill_button.grid(row=6, column=1, padx=10, pady=10)
         # kill adb server tooltip
-        tktooltip.ToolTip(
+        self.add_tooltip(
             self.kill_button,
             msg="Kills the ADB server."
             "\nI recommend always doing this after"
             " transferring.",
-            delay=1.0,
         )
 
         # start adb server button
@@ -332,14 +337,13 @@ class SettingsWindow:
         )
         self.start_button.grid(row=6, column=0, padx=10, pady=10)
         # start adb server tooltip
-        tktooltip.ToolTip(
+        self.add_tooltip(
             self.start_button,
             msg="Starts the ADB server."
             "\nThis is automatically done when transferring"
             " so this button is kinda useless but I already added"
             " 'Kill ADB Server' so it would feel kinda weird not to have"
             " this button too",
-            delay=1.0,
         )
 
         # save settings button
@@ -349,6 +353,18 @@ class SettingsWindow:
         self.save_button.grid(row=7, padx=10, pady=10, columnspan=2, **sticky)
 
     # === settings functions ===
+
+    def add_tooltip(self, button, msg):
+        """
+        creates a tooltip with preset parameters
+        """
+        tktooltip.ToolTip(
+            button,
+            msg=msg,
+            delay=2,
+            bg=self.bg_color,
+            fg=self.fg_color,
+        )
 
     def refresh_revert_button_state(self):
         """
