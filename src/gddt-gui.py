@@ -5,7 +5,6 @@ the gui for gddt
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
-import subprocess
 import gddt
 from ttkthemes import ThemedTk
 from ttkwidgets.autocomplete import AutocompleteCombobox
@@ -239,6 +238,11 @@ class SettingsWindow:
         self.android_dir_entry = ttk.Entry(self.settings_window)
         self.android_dir_entry.grid(row=1, column=1, padx=10, pady=10, sticky=tk.W)
         self.android_dir_entry.insert(0, gddt.config_manager.android_dir)
+        # android dir tooltip
+        self.add_tooltip(
+            self.android_dir_entry,
+            msg="The folder where GD save files are, in the Android device.",
+        )
 
         # pc dir label
         self.pc_dir_label = ttk.Label(self.settings_window, text="Computer save files")
@@ -247,6 +251,11 @@ class SettingsWindow:
         self.pc_dir_entry = ttk.Entry(self.settings_window)
         self.pc_dir_entry.grid(row=2, column=1, padx=10, pady=10, sticky=tk.W)
         self.pc_dir_entry.insert(0, gddt.config_manager.pc_dir)
+        # pc dir tooltip
+        self.add_tooltip(
+            self.pc_dir_entry,
+            msg="The folder where GD save files are, in this computer.",
+        )
 
         # save backups
         self.backups_setting = tk.BooleanVar(value=gddt.config_manager.save_backups)
@@ -456,7 +465,7 @@ class SettingsWindow:
 
     def toggle_adb_server(self, command):
         adb_command = [str(gddt.path_adb), command]
-        subprocess.run(adb_command, capture_output=True, text=True, check=False)
+        gddt.subprocess_run(adb_command)
         if command == "start-server":
             state = "started"
         else:

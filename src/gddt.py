@@ -128,6 +128,22 @@ config_manager.read_config()
 
 # === transferring data ===
 
+
+def subprocess_run(command):
+    if IS_BUNDLE and os.name == "nt":
+        flags = subprocess.CREATE_NO_WINDOW
+    else:
+        flags = 0
+
+    return subprocess.run(
+        command,
+        creationflags=flags,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+
 # get adb path
 path_adb = path_current_directory / "adb" / "adb"
 if os.name == "nt":
@@ -162,7 +178,7 @@ def backup_file(source, savefile):
                 f"{config_manager.android_dir}{savefile}",
                 str(backups_savefile_path),
             ]
-            subprocess.run(cmd, capture_output=True, text=True, check=False)
+            subprocess_run(cmd)
 
         print(f"saved backup at {backups_savefile_path}")
 
@@ -193,7 +209,7 @@ def revert_last_transfer():
                 backups_savefile_path,
                 f"{android_dir}{savefile}",
             ]
-            subprocess.run(cmd, capture_output=True, text=True, check=False)
+            subprocess_run(cmd)
         else:
             print("stupid")
             break
@@ -222,7 +238,7 @@ def transfersaves(source, destination):
             print("invalid source")
             break
 
-        result = subprocess.run(command, capture_output=True, text=True, check=False)
+        result = subprocess_run(command)
 
         if result.returncode == 0:
             print(f"{savefile} succesfully transferred")
