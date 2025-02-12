@@ -9,6 +9,16 @@ from pathlib import Path
 import shutil
 from urllib.request import urlretrieve
 from zipfile import ZipFile
+import argparse
+
+parser = argparse.ArgumentParser()
+
+parser.add_argument("-a", "--archive", help="Creates an archive")
+parser.add_argument(
+    "-d", "--download_adb", help="Automatically downloads ADB for the current os"
+)
+
+args = parser.parse_args()
 
 
 # paths
@@ -24,6 +34,33 @@ def create_bundle():
 
     result = subprocess.run(command, check=False)
     print(result)
+
+
+def move_files():
+    # copy config
+    if not os.path.exists(path_dist):  # not sure if this will always work so
+        print(
+            "\ncouldnt find dist directory because im stupid. please do everything else manually"
+        )
+        sys.exit(1)
+    else:
+        shutil.copy(path_config, path_dist / "settings.ini")
+
+    print("copied config to" + str(path_dist / "settings.ini"))
+
+    # rename gddt-gui to gddt
+    executable_name = "gddt-gui"
+    new_executable_name = "gddt"
+
+    if os.name == "nt":
+        executable_name += ".exe"
+        new_executable_name += ".exe"
+
+    os.rename(str(path_dist / executable_name), str(path_dist / new_executable_name))
+
+    # copy icon.png to dist
+    shutil.copy(path_current_directory / "assets" / "icon.png", path_dist / "icon.png")
+    print("copied icon.png")
 
 
 def download_adb():
@@ -67,36 +104,9 @@ def download_adb():
     # rename platform-tools folder to adb
     shutil.move(path_dist / "platform-tools", path_dist / "adb")
 
-
-def move_files():
-    # copy config
-    if not os.path.exists(path_dist):  # not sure if this will always work so
-        print(
-            "\ncouldnt find dist directory because im stupid. please do everything else manually"
-        )
-        sys.exit(1)
-    else:
-        shutil.copy(path_config, path_dist / "settings.ini")
-
-    print("copied config to" + str(path_dist / "settings.ini"))
-
-    # rename gddt-gui to gddt
-    executable_name = "gddt-gui"
-    new_executable_name = "gddt"
-
-    if os.name == "nt":
-        executable_name += ".exe"
-        new_executable_name += ".exe"
-
-    os.rename(str(path_dist / executable_name), str(path_dist / new_executable_name))
-
     # remove platform-tools.zip now that we dont need it
     os.remove(path_dist / "platform-tools.zip")
     print("removed platform-tools.zip")
-
-    # copy icon.png to dist
-    shutil.copy(path_current_directory / "assets" / "icon.png", path_dist / "icon.png")
-    print("copied icon.png")
 
 
 def create_archive():
@@ -120,9 +130,13 @@ def create_archive():
 
 
 create_bundle()
-download_adb()
 move_files()
-create_archive()
+
+if args.download_adb:
+    download_adb()
+
+if args.archive:
+    create_archive()
 
 print("done :D")
 
