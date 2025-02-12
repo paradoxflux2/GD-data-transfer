@@ -147,14 +147,14 @@ class MainWindow:
         print(new_message)
 
         # change text size depending on the message length
-        chars_before_resize = 60
+        chars_before_resize = 70
 
         message_length = len(new_message)
         if message_length > chars_before_resize:
             fontsize = fontsize * (0.995 ** (message_length - chars_before_resize))
             fontsize = round(max(fontsize, 5))
 
-        self.label.config(text=new_message, font=("Arial", fontsize))
+        self.label.config(text=new_message, font=("Arial", fontsize), justify="center")
 
     def check_settings_messagebox(self):
         if gddt.config_manager.first_run:
