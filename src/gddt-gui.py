@@ -93,8 +93,8 @@ class MainWindow:
 
         # transfer buttons
         self.transfer_button.pack(side=tk.BOTTOM)
-        self.phone_button.pack(pady=3)
-        self.pc_button.pack(pady=3)
+        self.phone_button.pack(pady=7)
+        self.pc_button.pack(pady=7)
 
     # === main window functions ===
 
