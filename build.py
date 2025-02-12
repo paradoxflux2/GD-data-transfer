@@ -13,9 +13,12 @@ import argparse
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument("-a", "--archive", help="Creates an archive")
+parser.add_argument("-a", "--archive", action="store_true", help="Creates an archive")
 parser.add_argument(
-    "-d", "--download_adb", help="Automatically downloads ADB for the current os"
+    "-d",
+    "--download_adb",
+    action="store_true",
+    help="Automatically downloads ADB for the current os",
 )
 
 args = parser.parse_args()
@@ -32,6 +35,7 @@ path_dist = working_directory / "dist"
 def create_bundle():
     command = ["pyinstaller", "--onefile", "--windowed", str(path_gddt_py)]
 
+    print("creating bundle...")
     result = subprocess.run(command, check=False)
     print(result)
 
@@ -91,6 +95,9 @@ def download_adb():
 
     # extract necessary adb files
     # (couldnt figure out a better way to do this im sorry)
+
+    print("extracting adb files")
+
     def extract(file_name):
         with ZipFile(str(path_platform_tools), "r") as platformtools:
             for file in platformtools.namelist():
