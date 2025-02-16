@@ -160,7 +160,10 @@ class MainWindow:
             messagebox.showinfo(
                 "Info",
                 "Before clicking 'transfer', please go to the settings "
-                "and make sure that the values are correct.",
+                "and make sure that the values are correct.\n"
+                "Also always make sure GD is closed, otherwise"
+                " GD will rewrite the saved data, making the transfer useless :("
+                "\n\nThis message won't be shown again",
             )
             gddt.config_manager.write_config("Other", "first_run", "False")
 
@@ -174,7 +177,6 @@ class SettingsWindow:
     """
 
     def __init__(self):
-        # "i wish there was an easier way to do this" ahh
         # i tried moving some of the declarations in
         # create_ui to here but that broke some things so uhh yeah
         self.settings_window = None
