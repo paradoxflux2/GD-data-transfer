@@ -128,14 +128,15 @@ def backup_file(source, savefile):
         if source == "phone":
             savefile_path = Path(config_manager.pc_dir) / savefile
             if savefile_path.is_file():
-                shutil.copy(f"{config_manager.pc_dir}{savefile}", backups_savefile_path)
+                shutil.copy(savefile_path, backups_savefile_path)
 
         # if its pc to phone, we pull savefile from android_dir
         elif source == "computer":
+            savefile_path = Path(config_manager.android_dir) / savefile
             cmd = [
                 str(path_adb),
                 "pull",
-                f"{config_manager.android_dir}{savefile}",
+                str(savefile_path),
                 str(backups_savefile_path),
             ]
             subprocess_run(cmd)
@@ -159,15 +160,16 @@ def revert_last_transfer():
         if last_transfer == "phonetopc":
             savefile_path = Path(pc_dir) / savefile
             if savefile_path.is_file():
-                shutil.copy(f"{pc_dir}{savefile}", backups_savefile_path)
-                print(f"copied {pc_dir}{savefile} to {backups_savefile_path}")
+                shutil.copy(backups_savefile_path, savefile_path)
+                print(f"copied {str(backups_savefile_path)} to {str(savefile_path)}")
 
         elif last_transfer == "pctophone":
+            savefile_path = Path(android_dir) / savefile
             cmd = [
                 str(path_adb),
                 "push",
                 backups_savefile_path,
-                f"{android_dir}{savefile}",
+                savefile_path,
             ]
             subprocess_run(cmd)
         else:
