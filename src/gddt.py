@@ -191,11 +191,15 @@ def transfersaves(source, destination):
         print(f"moving {savefile} to {destination}")
 
         if destination == "computer":  # phone to computer
-            command = [str(path_adb), "pull", f"{android_dir}{savefile}", str(pc_dir)]
+            android_savefile_path = Path(android_dir) / savefile
+            command = [str(path_adb), "pull", android_savefile_path, str(pc_dir)]
+
             config_manager.write_config("Files", "last_transfer", "phonetopc")
 
         elif destination == "phone":  # computer to phone
-            command = [str(path_adb), "push", f"{pc_dir}{savefile}", android_dir]
+            pc_savefile_path = Path(pc_dir) / savefile
+            command = [str(path_adb), "push", pc_savefile_path, android_dir]
+
             config_manager.write_config("Files", "last_transfer", "pctophone")
         else:
             print("invalid source")
