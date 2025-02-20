@@ -353,8 +353,8 @@ class SettingsWindow:
             msg="Starts the ADB server."
             "\nThis is automatically done when transferring"
             " so this button is kinda useless but I already added"
-            " 'Kill ADB Server' so it would feel kinda weird not to have"
-            " this button too",
+            " 'Kill ADB Server' so it felt kinda weird not to have"
+            " this button too idk",
         )
 
         # save settings button
@@ -377,15 +377,6 @@ class SettingsWindow:
             fg=self.fg_color,
         )
 
-    def refresh_revert_button_state(self):
-        """
-        disable revert transfer button if backups are disabled or no transfers have been made
-        """
-        if self.backups_setting.get() and gddt.config_manager.last_transfer != "None":
-            self.revert_transfer_button.config(state=tk.NORMAL)
-        else:
-            self.revert_transfer_button.config(state=tk.DISABLED)
-
     def save_settings(self):
         """
         saves settings to config file
@@ -401,7 +392,7 @@ class SettingsWindow:
         # save backups setting
         self.backups_setting_value = self.backups_setting.get()
         gddt.config_manager.write_config(
-            "Files", "save_backups", str(self.backups_setting.get())
+            "Files", "save_backups", self.backups_setting.get()
         )
 
         self.refresh_revert_button_state()
@@ -490,9 +481,19 @@ class SettingsWindow:
         )
         if self.response is True:
             gddt.revert_last_transfer()
+            self.refresh_revert_button_state()
             main_window.change_msg("last transfer reverted")
         else:
             main_window.change_msg("revert cancelled")
+
+    def refresh_revert_button_state(self):
+        """
+        disable revert transfer button if backups are disabled or no transfers have been made
+        """
+        if self.backups_setting.get() and gddt.config_manager.last_transfer != "None":
+            self.revert_transfer_button.config(state=tk.NORMAL)
+        else:
+            self.revert_transfer_button.config(state=tk.DISABLED)
 
 
 main_window = MainWindow()

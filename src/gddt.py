@@ -64,12 +64,6 @@ class ConfigManager:
         # the last transfer done. "None" by default
         self.last_transfer = config.get("Files", "last_transfer")
 
-        # backwards compatibility thing (<v0.1.0)
-        if not config.has_section("Other"):
-            config.add_section("Other")
-            self.write_config("Other", "theme", "arc")
-            self.write_config("Other", "hide_ugly_themes", "True")
-
         # ttk theme
         self.theme = config.get("Other", "theme")
 
@@ -85,11 +79,12 @@ class ConfigManager:
 
     def write_config(self, section, option, value):
         """writes to config and sets value"""
-        config.set(section, option, value)
+        config.set(section, option, str(value))
+
         with open(self.path_config_file, "w", encoding="utf-8") as configfile:
             config.write(configfile)
 
-        options = [
+        valid_options = [
             "android_dir",
             "pc_dir",
             "file_list",
@@ -101,25 +96,8 @@ class ConfigManager:
             "first_run",
         ]
 
-        if option in options:
+        if option in valid_options:
             setattr(self, option, value)
-
-    def set_dir(self, directory, new_path):
-        """sets new directory and writes it to config"""
-        if directory == "android_dir":
-            self.android_dir = new_path
-        elif directory == "pc_dir":
-            self.pc_dir = new_path
-
-        self.write_config("Directories", directory, new_path)
-
-    def set_backups_setting(self, new_value):
-        """changes backups setting to a boolean value"""
-        self.write_config("Files", "save_backups", str(new_value))
-
-    def set_last_transfer(self, new_last_transfer):
-        """sets new last transfer"""
-        self.write_config("Files", "last_transfer", new_last_transfer)
 
 
 config_manager = ConfigManager(path_current_directory)
@@ -130,6 +108,9 @@ config_manager.read_config()
 
 
 def subprocess_run(command):
+    """
+    wrapper for subprocess.run with some preset parameters
+    """
     if IS_BUNDLE and os.name == "nt":
         flags = subprocess.CREATE_NO_WINDOW
     else:
@@ -158,9 +139,11 @@ def backup_file(source, savefile):
     """backs up a file into backups directory"""
 
     if config_manager.save_backups:
-        # create backups directory
+        print(f"backing up {savefile}")
+
         backups_dir = path_current_directory / "backups"
         backups_savefile_path = backups_dir / savefile
+        # create backups directory
         if not os.path.exists(backups_dir):
             os.makedirs(backups_dir)
 
@@ -214,6 +197,8 @@ def revert_last_transfer():
             print("stupid")
             break
 
+    config_manager.write_config("Files", "last_transfer", "None")
+
 
 def transfersaves(source, destination):
     """transfers save files between devices"""
@@ -222,18 +207,17 @@ def transfersaves(source, destination):
     filelist = config_manager.filelist
 
     for savefile in filelist:
-        print(f"backing up {savefile}")
         backup_file(source, savefile)
 
         print(f"moving {savefile} to {destination}")
 
         if destination == "computer":  # phone to computer
             command = [str(path_adb), "pull", f"{android_dir}{savefile}", str(pc_dir)]
-            config_manager.set_last_transfer("phonetopc")
+            config_manager.write_config("Files", "last_transfer", "phonetopc")
 
         elif destination == "phone":  # computer to phone
             command = [str(path_adb), "push", f"{pc_dir}{savefile}", android_dir]
-            config_manager.set_last_transfer("pctophone")
+            config_manager.write_config("Files", "last_transfer", "pctophone")
         else:
             print("invalid source")
             break
@@ -245,7 +229,7 @@ def transfersaves(source, destination):
         else:
             print(f"couldnt transfer {savefile}. return code: {result.returncode}")
             print(result.stderr)
-            config_manager.set_last_transfer("None")
+            config_manager.write_config("Files", "last_transfer", "None")
             print("all other files have been skipped")
             break
 
