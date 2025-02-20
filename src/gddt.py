@@ -1,5 +1,8 @@
 """
 this file handles reading config and transferring data
+
+while it's functional by itself it is usually only used for testing. 
+gui has more features (e.g. reverting transfer)
 """
 
 import os
@@ -11,12 +14,8 @@ import shutil
 
 config = ConfigParser(interpolation=None)
 
-# get application path (thank you random person from stackoverflow
-# that wrote this like 5 years ago)
+# get application path
 if getattr(sys, "frozen", False):
-    # If the application is run as a bundle, the PyInstaller bootloader
-    # extends the sys module by a flag frozen=True and sets the app
-    # path into variable executable'.
     path_current_directory = Path(sys.executable).parent
     IS_BUNDLE = True
 else:
@@ -31,15 +30,7 @@ class ConfigManager:
 
     def __init__(self, path):
         self.path_config_file = path / "settings.ini"
-        self.android_dir = None
-        self.pc_dir = None
-        self.filelist = None
-        self.save_backups = None
-        self.last_transfer = None
-        self.theme = None
-        self.hide_ugly_themes = None
-        self.show_actual_error_messages = None
-        self.first_run = None
+        self.read_config()
 
     def read_config(self):
         """take things from config"""
@@ -50,31 +41,19 @@ class ConfigManager:
 
         config.read(self.path_config_file)
 
-        # directories
+        # [Directories]
         self.android_dir = config.get("Directories", "android_dir")
         self.pc_dir = os.path.expandvars(config.get("Directories", "pc_dir"))
-
-        # files that will be transferred (ik this technically could
-        # also be used for things outside gd but who cares lol)
+        # [Files]
         self.filelist = config.get("Files", "file_list").split(",")
-
-        # if backups will be saved
         self.save_backups = config.getboolean("Files", "save_backups")
-
-        # the last transfer done. "None" by default
         self.last_transfer = config.get("Files", "last_transfer")
-
-        # ttk theme
+        # [Other]
         self.theme = config.get("Other", "theme")
-
-        # if the ugliest themes will be hidden from the themes dropdown
         self.hide_ugly_themes = config.getboolean("Other", "hide_ugly_themes")
-
-        # if actual error messages will be shown when transfer fails
         self.show_actual_error_messages = config.getboolean(
             "Other", "show_actual_error_messages"
         )
-
         self.first_run = config.getboolean("Other", "first_run")
 
     def write_config(self, section, option, value):
@@ -101,8 +80,6 @@ class ConfigManager:
 
 
 config_manager = ConfigManager(path_current_directory)
-
-config_manager.read_config()
 
 # === transferring data ===
 

@@ -114,6 +114,7 @@ class MainWindow:
     error_messages = {
         "no devices/emulators found": "no devices found, is your device connected?",
         "No such file": "please verify that directories are correct",
+        "Try 'adb kill-server'": "try going to the settings and killing the ADB server",
     }
 
     def transfer_button_click(self):
