@@ -244,7 +244,7 @@ class SettingsWindow:
         # android dir tooltip
         self.add_tooltip(
             self.android_dir_entry,
-            msg="The folder where GD save files are, in the Android device.",
+            msg="The folder where GD save files are, in the Android device",
         )
 
         # pc dir label
@@ -257,7 +257,7 @@ class SettingsWindow:
         # pc dir tooltip
         self.add_tooltip(
             self.pc_dir_entry,
-            msg="The folder where GD save files are, in this computer.",
+            msg="The folder where GD save files are, in this computer",
         )
 
         # save backups
@@ -273,8 +273,7 @@ class SettingsWindow:
         # save backups tooltip
         self.add_tooltip(
             self.backups_checkbox,
-            msg="If backups will be saved every "
-            "time the transfer button is clicked.",
+            msg="If backups will be saved every " "time the transfer button is clicked",
         )
 
         # revert transfer button
@@ -290,8 +289,8 @@ class SettingsWindow:
         self.add_tooltip(
             self.revert_transfer_button,
             msg="Reverts the previous transfer.\nUseful if, for example, you accidentally"
-            " clicked the wrong destination so you lost\nsome progress there."
-            "\n\nOnly works with 'Make Backups' enabled.",
+            " clicked the wrong destination so you lost\nsome progress there"
+            "\n\nOnly works with 'Make Backups' enabled",
         )
 
         # other label
@@ -320,10 +319,10 @@ class SettingsWindow:
         # theme combo tooltip
         self.add_tooltip(
             self.themes_combo,
-            msg="The TTK Theme that the program will use."
+            msg="The TTK Theme that the program will use"
             "\nMost of the default themes are hidden because they suck,"
             " you can still type them in though. Or you can also change"
-            " hide_ugly_themes in settings.ini if you prefer.",
+            " hide_ugly_themes in settings.ini if you prefer",
         )
 
         # kill adb server button
@@ -338,7 +337,7 @@ class SettingsWindow:
             self.kill_button,
             msg="Kills the ADB server."
             "\nI recommend always doing this after"
-            " transferring.",
+            " transferring",
         )
 
         # start adb server button
