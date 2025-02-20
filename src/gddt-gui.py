@@ -483,6 +483,7 @@ class SettingsWindow:
         if self.response is True:
             gddt.revert_last_transfer()
             self.refresh_revert_button_state()
+
             main_window.change_msg("last transfer reverted")
         else:
             main_window.change_msg("revert cancelled")

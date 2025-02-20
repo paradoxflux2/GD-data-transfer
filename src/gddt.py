@@ -119,7 +119,7 @@ def backup_file(source, savefile):
         print(f"backing up {savefile}")
 
         backups_dir = path_current_directory / "backups"
-        backups_savefile_path = backups_dir / savefile
+        savefile_backup_path = backups_dir / savefile
         # create backups directory
         if not os.path.exists(backups_dir):
             os.makedirs(backups_dir)
@@ -128,7 +128,7 @@ def backup_file(source, savefile):
         if source == "phone":
             savefile_path = Path(config_manager.pc_dir) / savefile
             if savefile_path.is_file():
-                shutil.copy(savefile_path, backups_savefile_path)
+                shutil.copy(savefile_path, savefile_backup_path)
 
         # if its pc to phone, we pull savefile from android_dir
         elif source == "computer":
@@ -136,12 +136,12 @@ def backup_file(source, savefile):
             cmd = [
                 str(path_adb),
                 "pull",
-                str(savefile_path),
-                str(backups_savefile_path),
+                str(savefile_path.as_posix()),
+                str(savefile_backup_path),
             ]
             subprocess_run(cmd)
 
-        print(f"saved backup at {backups_savefile_path}")
+        print(f"saved backup at {savefile_backup_path}")
 
 
 def revert_last_transfer():
@@ -155,34 +155,35 @@ def revert_last_transfer():
 
     for savefile in filelist:
         backups_dir = path_current_directory / "backups"
-        backups_savefile_path = backups_dir / savefile
+        savefile_backup_path = backups_dir / savefile
 
         if last_transfer == "phonetopc":
             savefile_path = Path(pc_dir) / savefile
             if savefile_path.is_file():
-                shutil.copy(backups_savefile_path, savefile_path)
-                print(f"copied {str(backups_savefile_path)} to {str(savefile_path)}")
+                result = shutil.copy(savefile_backup_path, savefile_path)
+                print(f"copied {str(savefile_backup_path)} to {str(savefile_path)}")
 
         elif last_transfer == "pctophone":
             savefile_path = Path(android_dir) / savefile
             cmd = [
                 str(path_adb),
                 "push",
-                backups_savefile_path,
-                savefile_path,
+                str(savefile_backup_path),
+                str(savefile_path.as_posix()),
             ]
-            subprocess_run(cmd)
+            result = subprocess_run(cmd)
         else:
             print("stupid")
             break
 
     config_manager.write_config("Files", "last_transfer", "None")
+    return result
 
 
 def transfersaves(source, destination):
     """transfers save files between devices"""
-    pc_dir = config_manager.pc_dir
-    android_dir = config_manager.android_dir
+    pc_dir = Path(config_manager.pc_dir)
+    android_dir = Path(config_manager.android_dir)
     filelist = config_manager.filelist
 
     for savefile in filelist:
@@ -191,14 +192,24 @@ def transfersaves(source, destination):
         print(f"moving {savefile} to {destination}")
 
         if destination == "computer":  # phone to computer
-            android_savefile_path = Path(android_dir) / savefile
-            command = [str(path_adb), "pull", android_savefile_path, str(pc_dir)]
+            android_savefile_path = android_dir / savefile
+            command = [
+                str(path_adb),
+                "pull",
+                android_savefile_path.as_posix(),
+                str(pc_dir),
+            ]
 
             config_manager.write_config("Files", "last_transfer", "phonetopc")
 
         elif destination == "phone":  # computer to phone
-            pc_savefile_path = Path(pc_dir) / savefile
-            command = [str(path_adb), "push", pc_savefile_path, android_dir]
+            pc_savefile_path = pc_dir / savefile
+            command = [
+                str(path_adb),
+                "push",
+                str(pc_savefile_path),
+                android_dir.as_posix(),
+            ]
 
             config_manager.write_config("Files", "last_transfer", "pctophone")
         else:
