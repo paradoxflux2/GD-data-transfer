@@ -21,8 +21,8 @@ class MainWindow:
 
         # window
         self.root.title("GD Data Transfer")
-        self.root.geometry("500x300")
-        self.root.resizable(0, 0)
+        self.root.geometry("430x300")
+        self.root.resizable(False, False)
 
         # set icon
         if gddt.IS_BUNDLE:
