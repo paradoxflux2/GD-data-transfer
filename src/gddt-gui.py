@@ -209,6 +209,7 @@ class SettingsWindow:
         self.current_theme = gddt.config_manager.theme
         self.themes_combo = None
         self.theme_options = None
+        self.lasttransferlabel = None
 
     def create_ui(self):
         """
@@ -292,6 +293,21 @@ class SettingsWindow:
             " clicked the wrong destination so you lost\nsome progress there"
             "\n\nOnly works with 'Make Backups' enabled",
         )
+
+        # last transfer label
+        if gddt.config_manager.last_transfer == "pctophone":
+            last_transfer = "Computer to phone"
+        elif gddt.config_manager.last_transfer == "phonetopc":
+            last_transfer = "Phone to computer"
+        else:
+            last_transfer = "None"
+
+        self.lasttransferlabel = ttk.Label(
+            self.settings_window,
+            text=f"Last transfer:{last_transfer}",
+            font=("Arial", 7),
+        )
+        self.lasttransferlabel.grid(row=3, column=1, sticky=tk.S)
 
         # other label
         self.otherlabel = ttk.Label(
