@@ -24,14 +24,6 @@ class MainWindow:
         self.root.geometry("430x300")
         self.root.resizable(False, False)
 
-        # set icon
-        if gddt.IS_BUNDLE:
-            icon_path = gddt.path_current_directory / "icon.png"
-        else:
-            icon_path = gddt.path_current_directory.parent / "assets" / "icon.png"
-
-        self.root.iconphoto(True, tk.PhotoImage(file=icon_path))
-
         self.source = None
         self.dest = None
 
@@ -47,7 +39,9 @@ class MainWindow:
 
         # message
         self.label = ttk.Label(
-            self.root, text="please select a destination first", font=("Arial", 12)
+            self.root,
+            text="please select a destination first",
+            font=("Arial", 12),
         )
 
         # transfer button
@@ -69,14 +63,20 @@ class MainWindow:
             command=lambda: self.set_direction("computer", "phone"),
         )
 
-        self.pack_widgets()
+        self._pack_widgets()
 
-        self.check_settings_messagebox()
+        self._first_run_messagebox()
 
-    def pack_widgets(self):
-        """
-        create the ui for the main window
-        """
+    def _set_window_icon(self):
+        if gddt.IS_BUNDLE:
+            icon_path = gddt.path_current_directory / "icon.png"
+        else:
+            icon_path = gddt.path_current_directory.parent / "assets" / "icon.png"
+
+        self.root.iconphoto(True, tk.PhotoImage(file=icon_path))
+
+    def _pack_widgets(self):
+        """pack widgets for the main window"""
 
         # settings button
         self.settings_button.pack(anchor=tk.NW)
@@ -98,9 +98,7 @@ class MainWindow:
     # === main window functions ===
 
     def set_direction(self, new_source, new_dest):
-        """
-        sets new source and destination
-        """
+        """sets new source and destination"""
 
         if self.source == new_source:
             self.change_msg(f"destination was already {new_dest}, are you stupid?")
@@ -109,18 +107,9 @@ class MainWindow:
             self.dest = new_dest
             self.change_msg(f"changed destination to {new_dest}")
 
-    # error messages that will be replaced
-    # if a key is found in the command output, it will be replaced by its value
-    error_messages = {
-        "no devices/emulators found": "no devices found, is your device connected?",
-        "No such file": "please verify that directories are correct",
-        "Try 'adb kill-server'": "try going to the settings and killing the ADB server",
-    }
-
     def transfer_button_click(self):
-        """
-        transfer button click
-        """
+        """transfer button click event"""
+
         if self.source is None:
             self.change_msg("you didnt select anything")
         else:
@@ -131,19 +120,27 @@ class MainWindow:
             else:
                 self.error_msg = self.transfer_result.stderr.strip()
 
-                # replace some error messages
                 if not gddt.config_manager.show_actual_error_messages:
-                    for key, value in self.error_messages.items():
-                        if key in self.error_msg:
-                            self.error_msg = value
-                            break
+                    self._replace_error_msg()
 
                 self.change_msg(f"couldnt transfer save files\n{self.error_msg}")
 
+    def _replace_error_msg(self):
+        """replaces error messages with a bit more user-friendly ones"""
+
+        # error messages to be replaced if found in command output
+        error_messages = {
+            "no devices/emulators found": "no devices found, is your device connected?",
+            "No such file": "please verify that directories are correct",
+            "Try 'adb kill-server'": "try going to the settings and killing the ADB server",
+        }
+        for key, value in error_messages.items():
+            if key in self.error_msg:
+                self.error_msg = value
+                break
+
     def change_msg(self, new_message, fontsize=12):
-        """
-        change message in window and print same message
-        """
+        """change message in window and print same message"""
         print(new_message)
 
         # change text size depending on the message length
@@ -156,7 +153,8 @@ class MainWindow:
 
         self.label.config(text=new_message, font=("Arial", fontsize), justify="center")
 
-    def check_settings_messagebox(self):
+    def _first_run_messagebox(self):
+        """display a message box on first run"""
         if gddt.config_manager.first_run:
             messagebox.showinfo(
                 "Info",
@@ -212,9 +210,7 @@ class SettingsWindow:
         self.lasttransferlabel = None
 
     def create_ui(self):
-        """
-        open settings window
-        """
+        """open settings window"""
 
         # this always broke the default value of the backups checkbox for some reason
         # self.settings_window = ThemedTk(theme=gddt.config_manager.theme, themebg=True)
@@ -290,8 +286,8 @@ class SettingsWindow:
         self.add_tooltip(
             self.revert_transfer_button,
             msg="Reverts the previous transfer.\nUseful if, for example, you accidentally"
-            " clicked the wrong destination so you lost\nsome progress there"
-            "\n\nOnly works with 'Make Backups' enabled",
+            " clicked the wrong destination so you lost\nsome progress there\n\n"
+            "Only works with 'Make Backups' enabled",
         )
 
         # last transfer label
@@ -304,7 +300,7 @@ class SettingsWindow:
 
         self.lasttransferlabel = ttk.Label(
             self.settings_window,
-            text=f"Last transfer:{last_transfer}",
+            text=f"Last transfer: {last_transfer}",
             font=("Arial", 7),
         )
         self.lasttransferlabel.grid(row=3, column=1, sticky=tk.S)
@@ -382,9 +378,7 @@ class SettingsWindow:
     # === settings functions ===
 
     def add_tooltip(self, button, msg):
-        """
-        creates a tooltip with preset parameters
-        """
+        """creates a tooltip with preset parameters"""
         tktooltip.ToolTip(
             button,
             msg=msg,
@@ -394,9 +388,7 @@ class SettingsWindow:
         )
 
     def save_settings(self):
-        """
-        saves settings to config file
-        """
+        """save settings button event"""
         # save directories
         gddt.config_manager.write_config(
             "Directories", "android_dir", self.android_dir_entry.get()
@@ -421,9 +413,7 @@ class SettingsWindow:
         main_window.change_msg("saved settings!")
 
     def update_theme(self):
-        """
-        updates the theme
-        """
+        """updates the theme for both windows"""
         main_window.root.set_theme(self.themes_combo.get())
         main_window.root.update()
 
@@ -434,9 +424,7 @@ class SettingsWindow:
         self.current_theme = self.new_theme.get()
 
     def filter_themes(self, themes):
-        """
-        filter out themes that suck
-        """
+        """filter out themes that suck"""
         if gddt.config_manager.hide_ugly_themes:
             ugly_themes = [
                 "alt",
@@ -473,6 +461,7 @@ class SettingsWindow:
         return themes
 
     def toggle_adb_server(self, command):
+        """starts or kills adb"""
         adb_command = [str(gddt.path_adb), command]
         gddt.subprocess_run(adb_command)
         if command == "start-server":
@@ -483,6 +472,8 @@ class SettingsWindow:
         main_window.change_msg(f"adb server {state}")
 
     def revert_last_transfer(self):
+        """reverts the last transfer"""
+
         # assign previous destination so it can be used in the messagebox
         if gddt.config_manager.last_transfer == "phonetopc":
             self.prev_dest = "computer"
@@ -504,9 +495,7 @@ class SettingsWindow:
             main_window.change_msg("revert cancelled")
 
     def refresh_revert_button_state(self):
-        """
-        disable revert transfer button if backups are disabled or no transfers have been made
-        """
+        """disable revert transfer button if backups are disabled or no transfers have been made"""
         if self.backups_setting.get() and gddt.config_manager.last_transfer != "None":
             self.revert_transfer_button.config(state=tk.NORMAL)
         else:
