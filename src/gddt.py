@@ -28,7 +28,7 @@ else:
 class ConfigManager:
     """manages config"""
 
-    def __init__(self, path):
+    def __init__(self, path: Path):
         self.path_config_file = path / "settings.ini"
         self.read_config()
 
@@ -56,24 +56,19 @@ class ConfigManager:
         )
         self.first_run = config.getboolean("Other", "first_run")
 
-    def write_config(self, section, option, value):
+    def write_config(self, section: str, option: str, value: str):
         """writes to config and sets value"""
         config.set(section, option, str(value))
 
         with open(self.path_config_file, "w", encoding="utf-8") as configfile:
             config.write(configfile)
 
-        valid_options = [
-            "android_dir",
-            "pc_dir",
-            "file_list",
-            "save_backups",
-            "last_transfer",
-            "theme",
-            "hide_ugly_themes",
-            "show_actual_error_messages",
-            "first_run",
-        ]
+        # get all options
+        valid_sections = ["Directories", "Files", "Other"]
+        valid_options = []
+
+        for valid_section in valid_sections:
+            valid_options += config.options(valid_section)
 
         if option in valid_options:
             setattr(self, option, value)
@@ -84,10 +79,8 @@ config_manager = ConfigManager(path_current_directory)
 # === transferring data ===
 
 
-def subprocess_run(command):
-    """
-    wrapper for subprocess.run with some preset parameters
-    """
+def subprocess_run(command: str) -> str:
+    """wrapper for subprocess.run with some preset parameters"""
     if IS_BUNDLE and os.name == "nt":
         flags = subprocess.CREATE_NO_WINDOW
     else:
@@ -112,7 +105,7 @@ if not path_adb.is_file():
     sys.exit(1)
 
 
-def backup_file(source, savefile):
+def backup_file(source: str, savefile: str):
     """backs up a file into backups directory"""
 
     if config_manager.save_backups:
@@ -144,7 +137,7 @@ def backup_file(source, savefile):
         print(f"saved backup at {savefile_backup_path}")
 
 
-def revert_last_transfer():
+def revert_last_transfer() -> str:
     """reverts last transfer by copying whats inside /backups into
     save folder"""
 
@@ -180,7 +173,7 @@ def revert_last_transfer():
     return result
 
 
-def transfersaves(source, destination):
+def transfersaves(source: str, destination: str) -> str:
     """transfers save files between devices"""
     pc_dir = Path(config_manager.pc_dir)
     android_dir = Path(config_manager.android_dir)
@@ -231,15 +224,15 @@ def transfersaves(source, destination):
 
 
 # print everything
-if IS_BUNDLE:
-    print(f"running as bundle, on {os.name}")
-else:
-    print(f"running directly, on {os.name}")
-print(f"application directory: {path_current_directory}")
-print(f"config path: {config_manager.path_config_file}")
-print(f"android dir: {config_manager.android_dir}")
-print(f"pc dir: {config_manager.pc_dir}")
-print(f"adb path: {path_adb}")
+# if IS_BUNDLE:
+#     print(f"running as bundle, on {os.name}")
+# else:
+#     print(f"running directly, on {os.name}")
+# print(f"application directory: {path_current_directory}")
+# print(f"config path: {config_manager.path_config_file}")
+# print(f"android dir: {config_manager.android_dir}")
+# print(f"pc dir: {config_manager.pc_dir}")
+# print(f"adb path: {path_adb}")
 
 if __name__ == "__main__":
     DST = input("transfer files to: (phone/computer): ").strip().lower()

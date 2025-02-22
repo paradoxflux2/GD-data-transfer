@@ -97,7 +97,7 @@ class MainWindow:
 
     # === main window functions ===
 
-    def set_direction(self, new_source, new_dest):
+    def set_direction(self, new_source: str, new_dest: str):
         """sets new source and destination"""
 
         if self.source == new_source:
@@ -139,7 +139,7 @@ class MainWindow:
                 self.error_msg = value
                 break
 
-    def change_msg(self, new_message, fontsize=12):
+    def change_msg(self, new_message: str, fontsize=12):
         """change message in window and print same message"""
         print(new_message)
 
@@ -192,12 +192,8 @@ class SettingsWindow:
         self.save_button = None
 
         self.backups_setting_value = None
-        self.prev_dest = None
-        self.response = None
 
         self.otherlabel = None
-        self.kill_server_command = None
-        self.start_server_command = None
 
         self.style = ttk.Style(self.settings_window)
         self.bg_color = self.style.lookup("TFrame", "background")
@@ -423,7 +419,7 @@ class SettingsWindow:
 
         self.current_theme = self.new_theme.get()
 
-    def filter_themes(self, themes):
+    def filter_themes(self, themes: list) -> list:
         """filter out themes that suck"""
         if gddt.config_manager.hide_ugly_themes:
             ugly_themes = [
@@ -476,17 +472,17 @@ class SettingsWindow:
 
         # assign previous destination so it can be used in the messagebox
         if gddt.config_manager.last_transfer == "phonetopc":
-            self.prev_dest = "computer"
+            prev_dest = "computer"
         else:
-            self.prev_dest = "phone"
+            prev_dest = "phone"
 
-        self.response = messagebox.askyesno(
+        response = messagebox.askyesno(
             "Confirm action",
             "Doing this will revert the last transfer you have made, potentially"
-            f" making you lose progress if the save files in your {self.prev_dest} are newer than"
+            f" making you lose progress if the save files in your {prev_dest} are newer than"
             f" the backups made by GDDT. \n\nAre you sure you want to continue?",
         )
-        if self.response is True:
+        if response is True:
             gddt.revert_last_transfer()
             self.refresh_revert_button_state()
 

@@ -13,7 +13,12 @@ import argparse
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument("-a", "--archive", action="store_true", help="Creates an archive")
+parser.add_argument(
+    "-a",
+    "--archive",
+    action="store_true",
+    help="Creates an archive of all files in the dist folder",
+)
 parser.add_argument(
     "-d",
     "--download_adb",
@@ -98,7 +103,7 @@ def download_adb():
 
     print("extracting adb files")
 
-    def extract(file_name):
+    def extract(file_name: str):
         with ZipFile(str(path_platform_tools), "r") as platformtools:
             for file in platformtools.namelist():
                 if file.endswith(file_name):
