@@ -45,13 +45,6 @@ def create_bundle():
     print(result)
 
 
-if not os.path.exists(path_dist):  # not sure if this will always work so
-    print(
-        "\ncouldnt find dist directory because im stupid. please do everything else manually"
-    )
-    sys.exit(1)
-
-
 def move_files():
     # rename gddt-gui to gddt
     executable_name = "gddt-gui"
@@ -138,6 +131,13 @@ def create_archive():
 
 
 create_bundle()
+
+if not os.path.exists(path_dist):  # not sure if this will always work so
+    print(
+        "\ncouldnt find dist directory because im stupid. please do everything else manually"
+    )
+    sys.exit(1)
+
 move_files()
 
 if args.download_adb:
