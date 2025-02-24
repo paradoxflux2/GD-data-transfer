@@ -32,12 +32,35 @@ class ConfigManager:
         self.path_config_file = path / "settings.ini"
         self.read_config()
 
+    def create_config(self):
+        """create config file with default values"""
+        config["Directories"] = {
+            "android_dir": "/storage/emulated/0/Android/media/com.geode.launcher/save/",
+            "pc_dir": "%LOCALAPPDATA%\\GeometryDash\\",
+        }
+        config["Files"] = {
+            "file_list": "CCGameManager.dat,CCLocalLevels.dat",
+            "save_backups": "True",
+            "last_transfer": "None",
+        }
+        config["Other"] = {
+            "theme": "arc",
+            "hide_ugly_themes": "True",
+            "show_actual_error_messages": "False",
+            "first_run": "True",
+        }
+
+        with open(self.path_config_file, "w", encoding="utf-8") as configfile:
+            config.write(configfile)
+
+        print("config file created")
+
     def read_config(self):
         """take things from config"""
         # check if config file exists
         if not self.path_config_file.is_file():
-            print(f"settings.ini not found at {self.path_config_file}")
-            sys.exit(1)
+            print(f"settings.ini not found at {self.path_config_file}. creating it...")
+            self.create_config()
 
         config.read(self.path_config_file)
 
@@ -62,6 +85,8 @@ class ConfigManager:
 
         with open(self.path_config_file, "w", encoding="utf-8") as configfile:
             config.write(configfile)
+
+        setattr(self, option, value)
 
         # get all options
         valid_sections = ["Directories", "Files", "Other"]

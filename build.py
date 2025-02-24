@@ -36,6 +36,12 @@ path_config = path_current_directory / "settings-sample.ini"
 working_directory = Path.cwd()
 path_dist = working_directory / "dist"
 
+if not os.path.exists(path_dist):  # not sure if this will always work so
+    print(
+        "\ncouldnt find dist directory because im stupid. please do everything else manually"
+    )
+    sys.exit(1)
+
 
 def create_bundle():
     command = ["pyinstaller", "--onefile", "--windowed", str(path_gddt_py)]
@@ -46,17 +52,6 @@ def create_bundle():
 
 
 def move_files():
-    # copy config
-    if not os.path.exists(path_dist):  # not sure if this will always work so
-        print(
-            "\ncouldnt find dist directory because im stupid. please do everything else manually"
-        )
-        sys.exit(1)
-    else:
-        shutil.copy(path_config, path_dist / "settings.ini")
-
-    print("copied config to" + str(path_dist / "settings.ini"))
-
     # rename gddt-gui to gddt
     executable_name = "gddt-gui"
     new_executable_name = "gddt"
