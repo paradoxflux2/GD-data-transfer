@@ -92,7 +92,9 @@ class MainWindow:
         self.label.pack(side=tk.BOTTOM, padx=20, pady=20)
         self.label.bind(
             "<Button-1>",
-            func=lambda event: messagebox.showinfo("Output", self.command_output),
+            func=lambda event: messagebox.showinfo(
+                "Command Output", self.command_output
+            ),
         )
 
     # === main window functions ===
@@ -114,12 +116,11 @@ class MainWindow:
             self.change_msg("you didnt select anything")
         else:
             result = gddt.transfersaves(self.source, self.dest)
+            self.command_output = result.stderr.strip()
 
             if result.returncode == 0:
                 self.change_msg("save files transferred succesfully!")
             else:
-                self.command_output = result.stderr.strip()
-
                 if gddt.config_manager.show_actual_error_messages is False:
                     error_message = self._replace_error_msg(self.command_output)
                 else:
