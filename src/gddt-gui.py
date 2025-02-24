@@ -24,6 +24,8 @@ class MainWindow:
         self.root.geometry("430x300")
         self.root.resizable(False, False)
 
+        self._set_window_icon()
+
         self.source = None
         self.dest = None
 
