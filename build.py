@@ -36,12 +36,6 @@ path_config = path_current_directory / "settings-sample.ini"
 working_directory = Path.cwd()
 path_dist = working_directory / "dist"
 
-if not os.path.exists(path_dist):  # not sure if this will always work so
-    print(
-        "\ncouldnt find dist directory because im stupid. please do everything else manually"
-    )
-    sys.exit(1)
-
 
 def create_bundle():
     command = ["pyinstaller", "--onefile", "--windowed", str(path_gddt_py)]
@@ -49,6 +43,13 @@ def create_bundle():
     print("creating bundle...")
     result = subprocess.run(command, check=False)
     print(result)
+
+
+if not os.path.exists(path_dist):  # not sure if this will always work so
+    print(
+        "\ncouldnt find dist directory because im stupid. please do everything else manually"
+    )
+    sys.exit(1)
 
 
 def move_files():
