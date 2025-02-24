@@ -11,7 +11,7 @@ from ttkwidgets.autocomplete import AutocompleteCombobox
 import tktooltip
 
 TITLE = "GD Data Transfer"
-WINDOW_SIZE = "430x300"
+WINDOW_SIZE = "400x280"
 
 
 class MainWindow:
@@ -32,10 +32,10 @@ class MainWindow:
         self.source = None
         self.dest = None
 
-        self.transfer_result = None
+        self.command_output = "Command output will show here"
         self.error_msg = None
 
-        self._pack_widgets()
+        self._place_widgets()
 
         self._first_run_messagebox()
 
@@ -47,19 +47,41 @@ class MainWindow:
 
         self.root.iconphoto(True, tk.PhotoImage(file=icon_path))
 
-    def _pack_widgets(self):
-        """pack widgets for the main window"""
+    def _place_widgets(self):
+        """place widgets in the main window"""
 
         # settings button
         self.settings_button = ttk.Label(self.root, text="Settings", cursor="hand2")
-        self.settings_button.pack(anchor=tk.NW)
+        self.settings_button.place(x=0, y=0)
         self.settings_button.bind(
             "<Button-1>", func=lambda event: settings_window.create_ui()
         )
 
-        # title
-        self.title = ttk.Label(self.root, text=TITLE, font=("Arial", 18))
-        self.title.pack(padx=20, pady=20)
+        # Transfer from: label
+        self.title = ttk.Label(self.root, text="Transfer from:", font=("Arial", 14))
+        self.title.place(x=75, y=80)
+
+        # phone to computer button
+        self.phone_to_pc_button = ttk.Button(
+            self.root,
+            text="Phone to computer",
+            command=lambda: self.set_direction("phone", "computer"),
+        )
+        self.phone_to_pc_button.place(x=215, y=60)
+
+        # computer to phone button
+        self.pc_to_phone_button = ttk.Button(
+            self.root,
+            text="Computer to phone",
+            command=lambda: self.set_direction("computer", "phone"),
+        )
+        self.pc_to_phone_button.place(x=215, y=110)
+
+        # transfer button
+        self.transfer_button = ttk.Button(
+            self.root, text="Transfer", command=self.transfer_button_click
+        )
+        self.transfer_button.place(relx=0.5, y=200, anchor=tk.CENTER)
 
         # message
         self.label = ttk.Label(
@@ -68,28 +90,10 @@ class MainWindow:
             font=("Arial", 12),
         )
         self.label.pack(side=tk.BOTTOM, padx=20, pady=20)
-
-        # transfer button
-        self.transfer_button = ttk.Button(
-            self.root, text="Transfer", command=self.transfer_button_click
+        self.label.bind(
+            "<Button-1>",
+            func=lambda event: messagebox.showinfo("Output", self.command_output),
         )
-        self.transfer_button.pack(side=tk.BOTTOM)
-
-        # phone to computer button
-        self.phone_to_pc_button = ttk.Button(
-            self.root,
-            text="Phone to computer",
-            command=lambda: self.set_direction("phone", "computer"),
-        )
-        self.phone_to_pc_button.pack(pady=7)
-
-        # computer to phone button
-        self.pc_to_phone_button = ttk.Button(
-            self.root,
-            text="Computer to phone",
-            command=lambda: self.set_direction("computer", "phone"),
-        )
-        self.pc_to_phone_button.pack(pady=7)
 
     # === main window functions ===
 
@@ -109,19 +113,21 @@ class MainWindow:
         if self.source is None:
             self.change_msg("you didnt select anything")
         else:
-            self.transfer_result = gddt.transfersaves(self.source, self.dest)
+            result = gddt.transfersaves(self.source, self.dest)
 
-            if self.transfer_result.returncode == 0:
+            if result.returncode == 0:
                 self.change_msg("save files transferred succesfully!")
             else:
-                self.error_msg = self.transfer_result.stderr.strip()
+                self.command_output = result.stderr.strip()
 
-                if not gddt.config_manager.show_actual_error_messages:
-                    self._replace_error_msg()
+                if gddt.config_manager.show_actual_error_messages is False:
+                    error_message = self._replace_error_msg(self.command_output)
+                else:
+                    error_message = self.command_output
 
-                self.change_msg(f"couldnt transfer save files\n{self.error_msg}")
+                self.change_msg(f"couldnt transfer save files\n{error_message}")
 
-    def _replace_error_msg(self):
+    def _replace_error_msg(self, output):
         """replaces error messages with a bit more user-friendly ones"""
 
         # error messages to be replaced if found in command output
@@ -131,14 +137,14 @@ class MainWindow:
             "Try 'adb kill-server'": "try going to the settings and killing the ADB server",
         }
         for key, value in error_messages.items():
-            if key in self.error_msg:
-                self.error_msg = value
+            if key in output:
+                error_message = value
                 break
 
-    def change_msg(self, new_message: str, fontsize=12):
-        """change message in window and print same message"""
-        print(new_message)
+        return error_message
 
+    def change_msg(self, new_message: str, fontsize=12):
+        """change message in window"""
         # change text size depending on the message length
         chars_before_resize = 70
 
