@@ -10,6 +10,9 @@ from ttkthemes import ThemedTk
 from ttkwidgets.autocomplete import AutocompleteCombobox
 import tktooltip
 
+TITLE = "GD Data Transfer"
+WINDOW_SIZE = "430x300"
+
 
 class MainWindow:
     """
@@ -20,8 +23,8 @@ class MainWindow:
         self.root = ThemedTk(theme=gddt.config_manager.theme, themebg=True)
 
         # window
-        self.root.title("GD Data Transfer")
-        self.root.geometry("430x300")
+        self.root.title(TITLE)
+        self.root.geometry(WINDOW_SIZE)
         self.root.resizable(False, False)
 
         self._set_window_icon()
@@ -31,39 +34,6 @@ class MainWindow:
 
         self.transfer_result = None
         self.error_msg = None
-
-        # create widgets
-        # settings button
-        self.settings_button = ttk.Label(self.root, text="Settings", cursor="hand2")
-
-        # title
-        self.title = ttk.Label(self.root, text="GD Data Transfer", font=("Arial", 18))
-
-        # message
-        self.label = ttk.Label(
-            self.root,
-            text="please select a destination first",
-            font=("Arial", 12),
-        )
-
-        # transfer button
-        self.transfer_button = ttk.Button(
-            self.root, text="Transfer", command=self.transfer_button_click
-        )
-
-        # phone to computer button
-        self.phone_button = ttk.Button(
-            self.root,
-            text="Phone to computer",
-            command=lambda: self.set_direction("phone", "computer"),
-        )
-
-        # computer to phone button
-        self.pc_button = ttk.Button(
-            self.root,
-            text="Computer to phone",
-            command=lambda: self.set_direction("computer", "phone"),
-        )
 
         self._pack_widgets()
 
@@ -81,21 +51,45 @@ class MainWindow:
         """pack widgets for the main window"""
 
         # settings button
+        self.settings_button = ttk.Label(self.root, text="Settings", cursor="hand2")
         self.settings_button.pack(anchor=tk.NW)
         self.settings_button.bind(
             "<Button-1>", func=lambda event: settings_window.create_ui()
         )
 
         # title
+        self.title = ttk.Label(self.root, text=TITLE, font=("Arial", 18))
         self.title.pack(padx=20, pady=20)
 
         # message
+        self.label = ttk.Label(
+            self.root,
+            text="please select a destination first",
+            font=("Arial", 12),
+        )
         self.label.pack(side=tk.BOTTOM, padx=20, pady=20)
 
-        # transfer buttons
+        # transfer button
+        self.transfer_button = ttk.Button(
+            self.root, text="Transfer", command=self.transfer_button_click
+        )
         self.transfer_button.pack(side=tk.BOTTOM)
-        self.phone_button.pack(pady=7)
-        self.pc_button.pack(pady=7)
+
+        # phone to computer button
+        self.phone_to_pc_button = ttk.Button(
+            self.root,
+            text="Phone to computer",
+            command=lambda: self.set_direction("phone", "computer"),
+        )
+        self.phone_to_pc_button.pack(pady=7)
+
+        # computer to phone button
+        self.pc_to_phone_button = ttk.Button(
+            self.root,
+            text="Computer to phone",
+            command=lambda: self.set_direction("computer", "phone"),
+        )
+        self.pc_to_phone_button.pack(pady=7)
 
     # === main window functions ===
 
@@ -181,7 +175,7 @@ class SettingsWindow:
         # i tried moving some of the declarations in
         # create_ui to here but that broke some things so uhh yeah
         self.settings_window = None
-        self.fileslabel = None
+        self.files_label = None
         self.android_dir_label = None
         self.android_dir_entry = None
         self.pc_dir_label = None
@@ -192,10 +186,7 @@ class SettingsWindow:
         self.kill_button = None
         self.start_button = None
         self.save_button = None
-
-        self.backups_setting_value = None
-
-        self.otherlabel = None
+        self.other_label = None
 
         self.style = ttk.Style(self.settings_window)
         self.bg_color = self.style.lookup("TFrame", "background")
@@ -205,27 +196,27 @@ class SettingsWindow:
         self.current_theme = gddt.config_manager.theme
         self.themes_combo = None
         self.theme_options = None
-        self.lasttransferlabel = None
+        self.last_transfer_label = None
 
     def create_ui(self):
         """open settings window"""
 
-        # this always broke the default value of the backups checkbox for some reason
+        # this always broke the default value of the
+        # backups checkbox for some reason idk why :((
         # self.settings_window = ThemedTk(theme=gddt.config_manager.theme, themebg=True)
         self.settings_window = tk.Toplevel()
         self.settings_window.title("Settings")
         self.settings_window.resizable(0, 0)
 
-        # manually set bg color
         self.settings_window.configure(bg=self.bg_color)
 
         sticky = {"sticky": "nswe"}
 
         # files label
-        self.fileslabel = ttk.Label(
+        self.files_label = ttk.Label(
             self.settings_window, text="Files", font=("Arial", 12)
         )
-        self.fileslabel.grid(row=0, column=0, columnspan=2, pady=10, sticky=tk.N)
+        self.files_label.grid(row=0, column=0, columnspan=2, pady=10, sticky=tk.N)
 
         # android dir label
         self.android_dir_label = ttk.Label(
@@ -268,7 +259,7 @@ class SettingsWindow:
         # save backups tooltip
         self.add_tooltip(
             self.backups_checkbox,
-            msg="If backups will be saved every " "time the transfer button is clicked",
+            msg="If backups will be saved every time the transfer button is clicked",
         )
 
         # revert transfer button
@@ -296,18 +287,18 @@ class SettingsWindow:
         else:
             last_transfer = "None"
 
-        self.lasttransferlabel = ttk.Label(
+        self.last_transfer_label = ttk.Label(
             self.settings_window,
             text=f"Last transfer: {last_transfer}",
             font=("Arial", 7),
         )
-        self.lasttransferlabel.grid(row=3, column=1, sticky=tk.S)
+        self.last_transfer_label.grid(row=3, column=1, sticky=tk.S)
 
         # other label
-        self.otherlabel = ttk.Label(
+        self.other_label = ttk.Label(
             self.settings_window, text="Other", font=("Arial", 12)
         )
-        self.otherlabel.grid(row=4, column=0, columnspan=2, pady=10, sticky=tk.N)
+        self.other_label.grid(row=4, column=0, columnspan=2, pady=10, sticky=tk.N)
 
         # theme label
         self.theme_label = ttk.Label(self.settings_window, text="Theme")
@@ -346,8 +337,7 @@ class SettingsWindow:
         self.add_tooltip(
             self.kill_button,
             msg="Kills the ADB server."
-            "\nI recommend always doing this after"
-            " transferring",
+            "\nI recommend always doing this after transferring",
         )
 
         # start adb server button
@@ -396,7 +386,6 @@ class SettingsWindow:
         )
 
         # save backups setting
-        self.backups_setting_value = self.backups_setting.get()
         gddt.config_manager.write_config(
             "Files", "save_backups", self.backups_setting.get()
         )
@@ -423,7 +412,7 @@ class SettingsWindow:
 
     def filter_themes(self, themes: list) -> list:
         """filter out themes that suck"""
-        if gddt.config_manager.hide_ugly_themes:
+        if gddt.config_manager.hide_ugly_themes is True:
             ugly_themes = [
                 "alt",
                 "aquativo",
@@ -458,16 +447,14 @@ class SettingsWindow:
 
         return themes
 
-    def toggle_adb_server(self, command):
+    def toggle_adb_server(self, command: str):
         """starts or kills adb"""
         adb_command = [str(gddt.path_adb), command]
         gddt.subprocess_run(adb_command)
         if command == "start-server":
-            state = "started"
+            main_window.change_msg("adb server started")
         else:
-            state = "is kil"
-
-        main_window.change_msg(f"adb server {state}")
+            main_window.change_msg("adb server is kil")
 
     def revert_last_transfer(self):
         """reverts the last transfer"""
