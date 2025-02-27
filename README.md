@@ -6,11 +6,9 @@ A tool to transfer your Geometry Dash save files, without having to save to RobT
 # Why does this exist?
 You see, back in ye olde times you used to be able to just save your data using the in-game 'Save' button, and then load it on another device.
 
-But then 2.2 came out. And there's a lot more traffic on the servers, causing the save button to become unreliable during peak hours. Unless you like gambling, that is.
+But then 2.2 came out. And there's a lot more traffic on the servers, causing the save button to become very unreliable during peak hours. Unless you like gambling, that is.
 
-Most of the time, you'll encounter this error message:
-
-![save error](assets/saveerror.png)
+When trying to save, most of the time you'll encounter this error message:
 
 > Backup failed. Please try again later. Save size is within limits.
 
@@ -37,5 +35,9 @@ You can download it [here](https://github.com/paradoxflux2/GD-data-transfer/rele
 
 # How does it work?
 
-It uses the ADB pull and push commands to transfer save files (CCGameManager.dat and CCLocalLevels.dat) to the destination.
+GDDT uses the ADB pull and push commands to transferboth save files to the destination. The save file folders are specified in the settings and you can change them as needed.
+
+By default, GDDT also makes backups every time you transfer your save files, so that you can undo that transfer if you misclicked and lost some progress or something. The button to revert your last transfer can be found in the settings.
+
+Only one backup for each save file is kept at a time, and those backups are overwritten with each transfer. This essentially means that you can only undo the most recent transfer.
 
