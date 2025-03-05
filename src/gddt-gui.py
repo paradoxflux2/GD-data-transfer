@@ -13,6 +13,14 @@ import tktooltip
 TITLE = "GD Data Transfer"
 WINDOW_SIZE = "400x280"
 
+FIRST_RUN_INFO = (
+    "Before clicking 'transfer', please go to the settings "
+    "and make sure that the values are correct.\n"
+    "Also always make sure GD is closed, otherwise"
+    " GD will rewrite the saved data, making the transfer useless :("
+    "\n\nThis message won't be shown again",
+)
+
 
 class MainWindow:
     """
@@ -27,19 +35,19 @@ class MainWindow:
         self.root.geometry(WINDOW_SIZE)
         self.root.resizable(False, False)
 
-        self._set_window_icon()
+        self.set_window_icon()
 
-        self.source = None
-        self.dest = None
+        self.source: str = None
+        self.dest: str = None
 
         self.command_output = "Command output will show here"
-        self.error_msg = None
+        self.error_msg: str = None
 
-        self._place_widgets()
+        self.place_widgets()
 
-        self._first_run_messagebox()
+        self.first_run_messagebox()
 
-    def _set_window_icon(self):
+    def set_window_icon(self):
         if gddt.IS_BUNDLE:
             icon_path = gddt.path_current_directory / "icon.png"
         else:
@@ -47,7 +55,7 @@ class MainWindow:
 
         self.root.iconphoto(True, tk.PhotoImage(file=icon_path))
 
-    def _place_widgets(self):
+    def place_widgets(self):
         """place widgets in the main window"""
 
         # settings button
@@ -122,13 +130,13 @@ class MainWindow:
                 self.change_msg("save files transferred succesfully!")
             else:
                 if gddt.config_manager.show_actual_error_messages is False:
-                    error_message = self._replace_error_msg(self.command_output)
+                    error_message = self.replace_error_msg(self.command_output)
                 else:
                     error_message = self.command_output
 
                 self.change_msg(f"couldnt transfer save files\n{error_message}")
 
-    def _replace_error_msg(self, output):
+    def replace_error_msg(self, output: str) -> str:
         """replaces error messages with a bit more user-friendly ones"""
 
         # error messages to be replaced if found in command output
@@ -156,17 +164,10 @@ class MainWindow:
 
         self.label.config(text=new_message, font=("Arial", fontsize), justify="center")
 
-    def _first_run_messagebox(self):
+    def first_run_messagebox(self):
         """display a message box on first run"""
         if gddt.config_manager.first_run:
-            messagebox.showinfo(
-                "Info",
-                "Before clicking 'transfer', please go to the settings "
-                "and make sure that the values are correct.\n"
-                "Also always make sure GD is closed, otherwise"
-                " GD will rewrite the saved data, making the transfer useless :("
-                "\n\nThis message won't be shown again",
-            )
+            messagebox.showinfo("Info", FIRST_RUN_INFO)
             gddt.config_manager.write_config("Other", "first_run", "False")
 
 
@@ -191,7 +192,7 @@ class SettingsWindow:
         self.backups_checkbox = None
         self.revert_transfer_button = None
         self.kill_button = None
-        self.start_button = None
+        self.show_devices_button = None
         self.save_button = None
         self.other_label = None
 
@@ -337,7 +338,7 @@ class SettingsWindow:
         self.kill_button = ttk.Button(
             self.settings_window,
             text="Kill ADB Server",
-            command=lambda: self.toggle_adb_server("kill-server"),
+            command=self.kill_adb,
         )
         self.kill_button.grid(row=6, column=1, padx=10, pady=10)
         # kill adb server tooltip
@@ -347,21 +348,17 @@ class SettingsWindow:
             "\nI recommend always doing this after transferring",
         )
 
-        # start adb server button
-        self.start_button = ttk.Button(
+        # show devices button
+        self.show_devices_button = ttk.Button(
             self.settings_window,
-            text="Start ADB Server",
-            command=lambda: self.toggle_adb_server("start-server"),
+            text="Show Devices",
+            command=self.show_devices,
         )
-        self.start_button.grid(row=6, column=0, padx=10, pady=10)
-        # start adb server tooltip
+        self.show_devices_button.grid(row=6, column=0, padx=10, pady=10)
+        # show devices tooltip
         self.add_tooltip(
-            self.start_button,
-            msg="Starts the ADB server."
-            "\nThis is automatically done when transferring"
-            " so this button is kinda useless but I already added"
-            " 'Kill ADB Server' so it felt kinda weird not to have"
-            " this button too idk",
+            self.show_devices_button,
+            msg="Show devices attached",
         )
 
         # save settings button
@@ -417,7 +414,7 @@ class SettingsWindow:
 
         self.current_theme = self.new_theme.get()
 
-    def filter_themes(self, themes: list) -> list:
+    def filter_themes(self, themes: list[str]) -> list[str]:
         """filter out themes that suck"""
         if gddt.config_manager.hide_ugly_themes is True:
             ugly_themes = [
@@ -454,14 +451,18 @@ class SettingsWindow:
 
         return themes
 
-    def toggle_adb_server(self, command: str):
-        """starts or kills adb"""
-        adb_command = [str(gddt.path_adb), command]
+    def kill_adb(self):
+        """runs an adb command"""
+        adb_command = [str(gddt.path_adb), "kill-server"]
         gddt.subprocess_run(adb_command)
-        if command == "start-server":
-            main_window.change_msg("adb server started")
-        else:
-            main_window.change_msg("adb server is kil")
+        main_window.change_msg("adb server is kil")
+
+    def show_devices(self):
+        """shows a popup with connected devices"""
+        adb_command = [str(gddt.path_adb), "devices"]
+        result = gddt.subprocess_run(adb_command)
+
+        messagebox.showinfo(title="Devices", message=result.stdout.strip())
 
     def revert_last_transfer(self):
         """reverts the last transfer"""
