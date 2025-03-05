@@ -87,7 +87,10 @@ class MainWindow:
 
         # transfer button
         self.transfer_button = ttk.Button(
-            self.root, text="Transfer", command=self.transfer_button_click
+            self.root,
+            text="Transfer",
+            command=self.transfer_button_click,
+            state=tk.DISABLED,
         )
         self.transfer_button.place(relx=0.5, y=200, anchor=tk.CENTER)
 
@@ -117,24 +120,23 @@ class MainWindow:
             self.dest = new_dest
             self.change_msg(f"changed destination to {new_dest}")
 
+        self.transfer_button.config(state=tk.NORMAL)
+
     def transfer_button_click(self):
         """transfer button click event"""
 
-        if self.source is None:
-            self.change_msg("you didnt select anything")
+        result = gddt.transfersaves(self.source, self.dest)
+        self.command_output = result.stderr.strip()
+
+        if result.returncode == 0:
+            self.change_msg("save files transferred succesfully!")
         else:
-            result = gddt.transfersaves(self.source, self.dest)
-            self.command_output = result.stderr.strip()
-
-            if result.returncode == 0:
-                self.change_msg("save files transferred succesfully!")
+            if gddt.config_manager.show_actual_error_messages is False:
+                error_message = self.replace_error_msg(self.command_output)
             else:
-                if gddt.config_manager.show_actual_error_messages is False:
-                    error_message = self.replace_error_msg(self.command_output)
-                else:
-                    error_message = self.command_output
+                error_message = self.command_output
 
-                self.change_msg(f"couldnt transfer save files\n{error_message}")
+            self.change_msg(f"couldnt transfer save files\n{error_message}")
 
     def replace_error_msg(self, output: str) -> str:
         """replaces error messages with a bit more user-friendly ones"""
