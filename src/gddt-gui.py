@@ -125,7 +125,7 @@ class MainWindow:
     def transfer_button_click(self):
         """transfer button click event"""
 
-        result = gddt.transfersaves(self.source, self.dest)
+        result = gddt.transfer_saves(self.source, self.dest)
         self.command_output = result.stderr.strip()
 
         if result.returncode == 0:

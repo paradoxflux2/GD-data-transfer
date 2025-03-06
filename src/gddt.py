@@ -198,7 +198,7 @@ def revert_last_transfer() -> str:
     return result
 
 
-def transfersaves(source: str, destination: str) -> str:
+def transfer_saves(source: str, destination: str) -> str:
     """transfers save files between devices"""
     pc_dir = Path(config_manager.pc_dir)
     android_dir = Path(config_manager.android_dir)
@@ -263,4 +263,4 @@ if __name__ == "__main__":
     DST = input("transfer files to: (phone/computer): ").strip().lower()
     SRC = "phone" if DST == "computer" else "computer"
 
-    transfersaves(SRC, DST)
+    transfer_saves(SRC, DST)
