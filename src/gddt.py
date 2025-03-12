@@ -10,7 +10,7 @@ import subprocess
 import sys
 from configparser import ConfigParser
 from pathlib import Path
-import shutil
+from shutil import copy
 
 config = ConfigParser(interpolation=None)
 
@@ -146,7 +146,7 @@ def backup_file(source: str, savefile: str):
         if source == "phone":
             savefile_path = Path(config_manager.pc_dir) / savefile
             if savefile_path.is_file():
-                shutil.copy(savefile_path, savefile_backup_path)
+                copy(savefile_path, savefile_backup_path)
 
         # if its pc to phone, we pull savefile from android_dir
         elif source == "computer":
@@ -178,7 +178,7 @@ def revert_last_transfer() -> str:
         if last_transfer == "phonetopc":
             savefile_path = Path(pc_dir) / savefile
             if savefile_path.is_file():
-                result = shutil.copy(savefile_backup_path, savefile_path)
+                result = copy(savefile_backup_path, savefile_path)
                 print(f"copied {str(savefile_backup_path)} to {str(savefile_path)}")
 
         elif last_transfer == "pctophone":
@@ -247,17 +247,6 @@ def transfer_saves(source: str, destination: str) -> str:
 
     return result
 
-
-# print everything
-# if IS_BUNDLE:
-#     print(f"running as bundle, on {os.name}")
-# else:
-#     print(f"running directly, on {os.name}")
-# print(f"application directory: {path_current_directory}")
-# print(f"config path: {config_manager.path_config_file}")
-# print(f"android dir: {config_manager.android_dir}")
-# print(f"pc dir: {config_manager.pc_dir}")
-# print(f"adb path: {path_adb}")
 
 if __name__ == "__main__":
     DST = input("transfer files to: (phone/computer): ").strip().lower()

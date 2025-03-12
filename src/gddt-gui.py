@@ -3,12 +3,11 @@ the gui for gddt
 """
 
 import tkinter as tk
-from tkinter import ttk
-from tkinter import messagebox
-import gddt
+from tkinter import ttk, messagebox
 from ttkthemes import ThemedTk
 from ttkwidgets.autocomplete import AutocompleteCombobox
 import tktooltip
+import gddt
 
 TITLE = "GD Data Transfer"
 WINDOW_SIZE = "400x280"
@@ -58,18 +57,15 @@ class MainWindow:
     def place_widgets(self):
         """place widgets in the main window"""
 
-        # settings button
         self.settings_button = ttk.Label(self.root, text="Settings", cursor="hand2")
         self.settings_button.place(x=0, y=0)
         self.settings_button.bind(
             "<Button-1>", func=lambda event: settings_window.create_ui()
         )
 
-        # Transfer from: label
         self.title = ttk.Label(self.root, text="Transfer from:", font=("Arial", 14))
         self.title.place(x=75, y=80)
 
-        # phone to computer button
         self.phone_to_pc_button = ttk.Button(
             self.root,
             text="Phone to computer",
@@ -77,7 +73,6 @@ class MainWindow:
         )
         self.phone_to_pc_button.place(x=215, y=60)
 
-        # computer to phone button
         self.pc_to_phone_button = ttk.Button(
             self.root,
             text="Computer to phone",
@@ -85,7 +80,6 @@ class MainWindow:
         )
         self.pc_to_phone_button.place(x=215, y=110)
 
-        # transfer button
         self.transfer_button = ttk.Button(
             self.root,
             text="Transfer",
@@ -94,7 +88,6 @@ class MainWindow:
         )
         self.transfer_button.place(relx=0.5, y=200, anchor=tk.CENTER)
 
-        # message
         self.label = ttk.Label(
             self.root,
             text="please select a destination first",
