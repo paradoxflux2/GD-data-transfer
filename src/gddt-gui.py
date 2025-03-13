@@ -129,7 +129,7 @@ class MainWindow:
             else:
                 error_message = self.command_output
 
-            self.change_msg(f"couldnt transfer save files\n{error_message}")
+            self.change_msg(f"couldnt transfer save files:\n{error_message}")
 
     def replace_error_msg(self, output: str) -> str:
         """replaces error messages with a bit more user-friendly ones"""
@@ -139,14 +139,13 @@ class MainWindow:
             "no devices/emulators found": "no devices found, is your device connected?",
             "No such file": "please verify that directories are correct",
             "Device unauthorized": "Device unauthorized",
-            "Try 'adb kill-server'": "try going to the settings and killing the ADB server",
         }
         for key, value in error_messages.items():
-            if key in output:
+            if key.lower() in output.lower():
                 error_message = value
-                break
+                return error_message
 
-        return error_message
+        return output
 
     def change_msg(self, new_message: str, fontsize=12):
         """change message in window"""
