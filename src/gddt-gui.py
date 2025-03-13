@@ -138,6 +138,7 @@ class MainWindow:
         error_messages = {
             "no devices/emulators found": "no devices found, is your device connected?",
             "No such file": "please verify that directories are correct",
+            "Device unauthorized": "Device unauthorized",
             "Try 'adb kill-server'": "try going to the settings and killing the ADB server",
         }
         for key, value in error_messages.items():
