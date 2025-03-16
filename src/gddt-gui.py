@@ -136,8 +136,8 @@ class MainWindow:
 
         # error messages to be replaced if found in command output
         error_messages = {
-            "no devices/emulators found": "no devices found, is your device connected?",
-            "No such file": "please verify that directories are correct",
+            "no devices/emulators found": "\nno devices found, is your device connected?",
+            "No such file": "\nplease verify that directories are correct",
             "Device unauthorized": "Device unauthorized.\ntry killing the ADB "
             "server (in settings) if that seems wrong.",
         }
