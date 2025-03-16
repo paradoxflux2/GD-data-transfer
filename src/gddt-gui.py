@@ -129,7 +129,7 @@ class MainWindow:
             else:
                 error_message = self.command_output
 
-            self.change_msg(f"couldnt transfer save files:\n{error_message}")
+            self.change_msg(f"couldnt transfer save files: {error_message}")
 
     def replace_error_msg(self, output: str) -> str:
         """replaces error messages with a bit more user-friendly ones"""
@@ -138,7 +138,8 @@ class MainWindow:
         error_messages = {
             "no devices/emulators found": "no devices found, is your device connected?",
             "No such file": "please verify that directories are correct",
-            "Device unauthorized": "Device unauthorized",
+            "Device unauthorized": "Device unauthorized.\ntry killing the ADB "
+            "server (in settings) if that seems wrong.",
         }
         for key, value in error_messages.items():
             if key.lower() in output.lower():
@@ -147,17 +148,23 @@ class MainWindow:
 
         return output
 
-    def change_msg(self, new_message: str, fontsize=12):
+    def change_msg(self, new_message: str, font_size=12):
         """change message in window"""
-        # change text size depending on the message length
+
         chars_before_resize = 70
-
+        character_limit = 120
         message_length = len(new_message)
-        if message_length > chars_before_resize:
-            fontsize = fontsize * (0.995 ** (message_length - chars_before_resize))
-            fontsize = round(max(fontsize, 5))
 
-        self.label.config(text=new_message, font=("Arial", fontsize), justify="center")
+        # resize depending on the message length
+        if message_length > chars_before_resize:
+            font_size = font_size * (0.995 ** (message_length - chars_before_resize))
+            font_size = round(max(font_size, 5))
+
+        if message_length > character_limit:
+            cut_message = new_message[:character_limit]
+            new_message = cut_message + "...\n(click to expand)"
+
+        self.label.config(text=new_message, font=("Arial", font_size), justify="center")
 
     def first_run_messagebox(self):
         """display a message box on first run"""
