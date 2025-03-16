@@ -148,7 +148,7 @@ class MainWindow:
 
         return output
 
-    def change_msg(self, new_message: str, font_size=12):
+    def change_msg(self, new_message: str, font_size: int = 12):
         """change message in window"""
 
         chars_before_resize = 70
@@ -222,41 +222,33 @@ class SettingsWindow:
 
         sticky = {"sticky": "nswe"}
 
-        # files label
         self.files_label = ttk.Label(
             self.settings_window, text="Files", font=("Arial", 12)
         )
         self.files_label.grid(row=0, column=0, columnspan=2, pady=10, sticky=tk.N)
 
-        # android dir label
         self.android_dir_label = ttk.Label(
             self.settings_window, text="Phone save files"
         )
         self.android_dir_label.grid(row=1, column=0, padx=10, pady=10, sticky=tk.E)
-        # android dir entry
         self.android_dir_entry = ttk.Entry(self.settings_window)
         self.android_dir_entry.grid(row=1, column=1, padx=10, pady=10, sticky=tk.W)
         self.android_dir_entry.insert(0, gddt.config_manager.android_dir)
-        # android dir tooltip
         self.add_tooltip(
             self.android_dir_entry,
             msg="The folder where GD save files are, in the Android device",
         )
 
-        # pc dir label
         self.pc_dir_label = ttk.Label(self.settings_window, text="Computer save files")
         self.pc_dir_label.grid(row=2, column=0, padx=10, pady=10, sticky=tk.E)
-        # pc dir entry
         self.pc_dir_entry = ttk.Entry(self.settings_window)
         self.pc_dir_entry.grid(row=2, column=1, padx=10, pady=10, sticky=tk.W)
         self.pc_dir_entry.insert(0, gddt.config_manager.pc_dir)
-        # pc dir tooltip
         self.add_tooltip(
             self.pc_dir_entry,
             msg="The folder where GD save files are, in this computer",
         )
 
-        # save backups
         self.backups_setting = tk.BooleanVar(value=gddt.config_manager.save_backups)
         self.backups_checkbox = ttk.Checkbutton(
             self.settings_window,
@@ -266,22 +258,18 @@ class SettingsWindow:
             offvalue=False,
         )
         self.backups_checkbox.grid(row=3, column=0, padx=10, pady=10)
-        # save backups tooltip
         self.add_tooltip(
             self.backups_checkbox,
             msg="If backups will be saved every time the transfer button is clicked",
         )
 
-        # revert transfer button
         self.revert_transfer_button = ttk.Button(
             self.settings_window,
             text="Revert Last Transfer",
             command=self.revert_last_transfer,
         )
         self.revert_transfer_button.grid(row=3, column=1, padx=10, pady=10)
-
         self.refresh_revert_button_state()
-
         self.add_tooltip(
             self.revert_transfer_button,
             msg="Reverts the previous transfer.\nUseful if, for example, you accidentally"
@@ -304,17 +292,14 @@ class SettingsWindow:
         )
         self.last_transfer_label.grid(row=3, column=1, sticky=tk.S)
 
-        # other label
         self.other_label = ttk.Label(
             self.settings_window, text="Other", font=("Arial", 12)
         )
         self.other_label.grid(row=4, column=0, columnspan=2, pady=10, sticky=tk.N)
 
-        # theme label
         self.theme_label = ttk.Label(self.settings_window, text="Theme")
         self.theme_label.grid(row=5, column=0, padx=10, pady=10, sticky=tk.E)
 
-        # theme combo
         self.theme_options = self.filter_themes(main_window.root.get_themes())
         self.theme_options.sort()
         self.new_theme = tk.StringVar(self.settings_window)
@@ -326,8 +311,6 @@ class SettingsWindow:
         )
         self.themes_combo.set(self.current_theme)
         self.themes_combo.grid(row=5, column=1, padx=10, pady=10, sticky=tk.W)
-
-        # theme combo tooltip
         self.add_tooltip(
             self.themes_combo,
             msg="The TTK Theme that the program will use"
@@ -336,34 +319,29 @@ class SettingsWindow:
             " hide_ugly_themes in settings.ini if you prefer",
         )
 
-        # kill adb server button
         self.kill_button = ttk.Button(
             self.settings_window,
             text="Kill ADB Server",
             command=self.kill_adb,
         )
         self.kill_button.grid(row=6, column=1, padx=10, pady=10)
-        # kill adb server tooltip
         self.add_tooltip(
             self.kill_button,
             msg="Kills the ADB server."
             "\nI recommend always doing this after transferring",
         )
 
-        # show devices button
         self.show_devices_button = ttk.Button(
             self.settings_window,
             text="Show Devices",
             command=self.show_devices,
         )
         self.show_devices_button.grid(row=6, column=0, padx=10, pady=10)
-        # show devices tooltip
         self.add_tooltip(
             self.show_devices_button,
             msg="Show devices attached",
         )
 
-        # save settings button
         self.save_button = ttk.Button(
             self.settings_window, text="Save Settings", command=self.save_settings
         )
@@ -383,7 +361,7 @@ class SettingsWindow:
 
     def save_settings(self):
         """save settings button event"""
-        # save directories
+        # directories
         gddt.config_manager.write_config(
             "Directories", "android_dir", self.android_dir_entry.get()
         )
@@ -391,14 +369,14 @@ class SettingsWindow:
             "Directories", "pc_dir", self.pc_dir_entry.get()
         )
 
-        # save backups setting
+        # backups setting
         gddt.config_manager.write_config(
             "Files", "save_backups", self.backups_setting.get()
         )
 
         self.refresh_revert_button_state()
 
-        # save new theme
+        # new theme
         if self.new_theme.get() in main_window.root.get_themes():
             gddt.config_manager.write_config("Other", "theme", self.new_theme.get())
             self.update_theme()
