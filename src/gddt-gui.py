@@ -12,6 +12,23 @@ import gddt
 TITLE = "GD Data Transfer"
 WINDOW_SIZE = "400x280"
 
+if gddt.adb_exists() == 0:  # is not installed
+    should_download_adb = messagebox.askyesno(
+        "ADB not found",
+        "Android Debug Bridge (ADB) could not be found. "
+        "It is necessary for GD Data Transfer to work. "
+        "Do you want to download it automatically?",
+    )
+    if should_download_adb:
+        gddt.download_adb()
+
+        gddt.ADB_EXE = gddt.path_current_directory / "adb" / "adb"
+        if gddt.os.name == "nt":
+            gddt.ADB_EXE = gddt.ADB_EXE.with_name("adb.exe")
+    else:
+        messagebox.showinfo("Info", "GDDT will NOT work without ADB :(")
+        gddt.sys.exit()
+
 FIRST_RUN_INFO = (
     "Before clicking 'transfer', please go to the settings "
     "and make sure that the values are correct.\n"
@@ -192,7 +209,7 @@ class SettingsWindow:
         self.pc_dir_entry = None
         self.backups_setting = None
         self.backups_checkbox = None
-        self.revert_transfer_button = None
+        self.undo_transfer_button = None
         self.kill_button = None
         self.show_devices_button = None
         self.save_button = None
@@ -263,15 +280,15 @@ class SettingsWindow:
             msg="If backups will be saved every time the transfer button is clicked",
         )
 
-        self.revert_transfer_button = ttk.Button(
+        self.undo_transfer_button = ttk.Button(
             self.settings_window,
-            text="Revert Last Transfer",
-            command=self.revert_last_transfer,
+            text="Undo Last Transfer",
+            command=self.undo_last_transfer,
         )
-        self.revert_transfer_button.grid(row=3, column=1, padx=10, pady=10)
-        self.refresh_revert_button_state()
+        self.undo_transfer_button.grid(row=3, column=1, padx=10, pady=10)
+        self.refresh_undo_button_state()
         self.add_tooltip(
-            self.revert_transfer_button,
+            self.undo_transfer_button,
             msg="Reverts the previous transfer.\nUseful if, for example, you accidentally"
             " clicked the wrong destination so you lost\nsome progress there\n\n"
             "Only works with 'Make Backups' enabled",
@@ -374,7 +391,7 @@ class SettingsWindow:
             "Files", "save_backups", self.backups_setting.get()
         )
 
-        self.refresh_revert_button_state()
+        self.refresh_undo_button_state()
 
         # new theme
         if self.new_theme.get() in main_window.root.get_themes():
@@ -433,19 +450,19 @@ class SettingsWindow:
 
     def kill_adb(self):
         """runs an adb command"""
-        adb_command = [str(gddt.path_adb), "kill-server"]
+        adb_command = [str(gddt.ADB_EXE), "kill-server"]
         gddt.subprocess_run(adb_command)
         main_window.change_msg("adb server is kil")
 
     def show_devices(self):
         """shows a popup with connected devices"""
-        adb_command = [str(gddt.path_adb), "devices"]
+        adb_command = [str(gddt.ADB_EXE), "devices"]
         result = gddt.subprocess_run(adb_command)
 
         messagebox.showinfo(title="Devices", message=result.stdout.strip())
 
-    def revert_last_transfer(self):
-        """reverts the last transfer"""
+    def undo_last_transfer(self):
+        """undoes the last transfer"""
 
         # assign previous destination so it can be used in the messagebox
         if gddt.config_manager.last_transfer == "phonetopc":
@@ -455,24 +472,24 @@ class SettingsWindow:
 
         response = messagebox.askyesno(
             "Confirm action",
-            "Doing this will revert the last transfer you have made, potentially"
+            "Doing this will undo the last transfer you have made, potentially"
             f" making you lose progress if the save files in your {prev_dest} are newer than"
             f" the backups made by GDDT. \n\nAre you sure you want to continue?",
         )
         if response is True:
-            gddt.revert_last_transfer()
-            self.refresh_revert_button_state()
+            gddt.undo_last_transfer()
+            self.refresh_undo_button_state()
 
-            main_window.change_msg("last transfer reverted")
+            main_window.change_msg("last transfer undoed")
         else:
-            main_window.change_msg("revert cancelled")
+            main_window.change_msg("undo cancelled")
 
-    def refresh_revert_button_state(self):
-        """disable revert transfer button if backups are disabled or no transfers have been made"""
+    def refresh_undo_button_state(self):
+        """disable undo transfer button if backups are disabled or no transfers have been made"""
         if self.backups_setting.get() and gddt.config_manager.last_transfer != "None":
-            self.revert_transfer_button.config(state=tk.NORMAL)
+            self.undo_transfer_button.config(state=tk.NORMAL)
         else:
-            self.revert_transfer_button.config(state=tk.DISABLED)
+            self.undo_transfer_button.config(state=tk.DISABLED)
 
 
 main_window = MainWindow()

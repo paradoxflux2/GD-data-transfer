@@ -10,7 +10,9 @@ import subprocess
 import sys
 from configparser import ConfigParser
 from pathlib import Path
-from shutil import copy
+from shutil import copy, which
+from urllib.request import urlretrieve  # for downloading adb
+from zipfile import ZipFile
 
 config = ConfigParser(interpolation=None)
 
@@ -120,14 +122,39 @@ def subprocess_run(command: str) -> str:
     )
 
 
-# get adb path
-path_adb = path_current_directory / "adb" / "adb"
-if os.name == "nt":
-    path_adb = path_adb.with_name("adb.exe")
+# check if adb is installed
+def adb_exists():
+    """
+    check if adb is on PATH or in the gddt folder
 
-if not path_adb.is_file():
-    print(f"adb not found at {path_adb}")
-    sys.exit(1)
+    can return three values:
+    0: ADB is not installed,
+    1: ADB is on PATH,
+    2: ADB is in the gddt folder,
+    """
+    # check if its in path
+    if which("adb") is not None:
+        return 1
+
+    # check if its in gddt folder
+    path_adb_gddt = path_current_directory / "adb" / "adb"
+    if os.name == "nt":
+        path_adb_gddt = path_adb_gddt.with_name("adb.exe")
+
+    if path_adb_gddt.is_file():
+        return 2
+
+    # neither of those are true
+    return 0
+
+
+if adb_exists() == 1:  # it's on PATH
+    ADB_EXE = "adb"
+
+elif adb_exists() == 2:  # it's in the gddt folder
+    ADB_EXE = path_current_directory / "adb" / "adb"
+    if os.name == "nt":
+        ADB_EXE = ADB_EXE.with_name("adb.exe")
 
 
 def backup_file(source: str, savefile: str):
@@ -152,7 +179,7 @@ def backup_file(source: str, savefile: str):
         elif source == "computer":
             savefile_path = Path(config_manager.android_dir) / savefile
             cmd = [
-                str(path_adb),
+                str(ADB_EXE),
                 "pull",
                 str(savefile_path.as_posix()),
                 str(savefile_backup_path),
@@ -162,7 +189,7 @@ def backup_file(source: str, savefile: str):
         print(f"saved backup at {savefile_backup_path}")
 
 
-def revert_last_transfer() -> str:
+def undo_last_transfer() -> str:
     """reverts last transfer by copying whats inside /backups into
     save folder"""
 
@@ -184,7 +211,7 @@ def revert_last_transfer() -> str:
         elif last_transfer == "pctophone":
             savefile_path = Path(android_dir) / savefile
             cmd = [
-                str(path_adb),
+                str(ADB_EXE),
                 "push",
                 str(savefile_backup_path),
                 str(savefile_path.as_posix()),
@@ -212,7 +239,7 @@ def transfer_saves(source: str, destination: str) -> str:
         if destination == "computer":  # phone to computer
             android_savefile_path = android_dir / savefile
             command = [
-                str(path_adb),
+                str(ADB_EXE),
                 "pull",
                 android_savefile_path.as_posix(),
                 str(pc_dir),
@@ -223,7 +250,7 @@ def transfer_saves(source: str, destination: str) -> str:
         elif destination == "phone":  # computer to phone
             pc_savefile_path = pc_dir / savefile
             command = [
-                str(path_adb),
+                str(ADB_EXE),
                 "push",
                 str(pc_savefile_path),
                 android_dir.as_posix(),
@@ -248,7 +275,67 @@ def transfer_saves(source: str, destination: str) -> str:
     return result
 
 
+def download_adb():
+    if os.name == "nt":
+        url = (
+            "https://dl.google.com/android/repository/platform-tools-latest-windows.zip"
+        )
+        adb_files = ["adb.exe", "AdbWinUsbApi.dll", "AdbWinApi.dll", "NOTICE.txt"]
+
+    elif sys.platform == "linux":
+        url = "https://dl.google.com/android/repository/platform-tools-latest-linux.zip"
+        adb_files = ["adb", "NOTICE.txt"]
+
+    elif sys.platform == "darwin":
+        url = (
+            "https://dl.google.com/android/repository/platform-tools-latest-darwin.zip"
+        )
+        adb_files = ["adb", "NOTICE.txt"]
+    else:
+        sys.exit(1)
+
+    # download platform-tools
+    print("downloading platform-tools from " + url)
+    path_platform_tools = path_current_directory / "platform-tools.zip"
+    urlretrieve(url, str(path_platform_tools))
+    print("platform-tools downloaded")
+
+    # extract necessary adb files
+    # (couldnt figure out a better way to do this im sorry)
+
+    print("extracting adb files")
+
+    def extract(file_name: str):
+        with ZipFile(str(path_platform_tools), "r") as platformtools:
+            for file in platformtools.namelist():
+                if file.endswith(file_name):
+                    platformtools.extract(file, path=path_current_directory)
+                    break
+
+    for file in adb_files:
+        extract(file)
+
+    # rename platform-tools folder to adb
+    os.rename(path_current_directory / "platform-tools", path_current_directory / "adb")
+
+    # remove platform-tools.zip now that we dont need it
+    os.remove(path_current_directory / "platform-tools.zip")
+    print("removed platform-tools.zip")
+
+
 if __name__ == "__main__":
+    if adb_exists() == 0:
+        should_download_adb = input(
+            "adb is not installed. do you want to download it? (y/N): "
+        )
+        if should_download_adb.lower() == "y":
+            download_adb()
+            ADB_EXE = path_current_directory / "adb" / "adb"
+            if os.name == "nt":
+                ADB_EXE = ADB_EXE.with_name("adb.exe")
+        else:
+            sys.exit()
+
     DST = input("transfer files to: (phone/computer): ").strip().lower()
     SRC = "phone" if DST == "computer" else "computer"
 
