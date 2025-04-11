@@ -161,7 +161,7 @@ def backup_file(source: str, savefile: str):
     """backs up a file into backups directory"""
 
     if config_manager.save_backups:
-        print(f"backing up {savefile}")
+        print(f"backing up {savefile}...")
 
         backups_dir = path_current_directory / "backups"
         savefile_backup_path = backups_dir / savefile
@@ -185,8 +185,6 @@ def backup_file(source: str, savefile: str):
                 str(savefile_backup_path),
             ]
             subprocess_run(cmd)
-
-        print(f"saved backup at {savefile_backup_path}")
 
 
 def undo_last_transfer() -> str:
@@ -234,7 +232,7 @@ def transfer_saves(source: str, destination: str) -> str:
     for savefile in filelist:
         backup_file(source, savefile)
 
-        print(f"moving {savefile} to {destination}")
+        print(f"moving {savefile} to {destination}...")
 
         if destination == "computer":  # phone to computer
             android_savefile_path = android_dir / savefile
@@ -263,9 +261,7 @@ def transfer_saves(source: str, destination: str) -> str:
 
         result = subprocess_run(command)
 
-        if result.returncode == 0:
-            print(f"{savefile} succesfully transferred")
-        else:
+        if result.returncode != 0:
             print(f"couldnt transfer {savefile}. return code: {result.returncode}")
             print(result.stderr)
             config_manager.write_config("Files", "last_transfer", "None")
