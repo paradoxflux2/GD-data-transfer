@@ -1,3 +1,8 @@
+# ARCHIVED !!
+RobTop has fixed the "Save size is within limits" error, so this has no purpose anymore - or well, unless you like transferring your data offline obviously. I mean, it's still faster... But either way the code for this sucks and I don't feel like encouraging anyone to use it.
+
+---
+
 # GD Data Transfer
 A tool to transfer your Geometry Dash save files, without having to save to RobTop's servers first.
 
